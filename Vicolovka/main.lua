@@ -20,7 +20,7 @@ function love.load()
         player = {}
         player.x = 1 * tileSize + 20
         player.y = 0 * tileSize + 20
-        player.speed = 64
+        player.speed = 128
 end
 
 function love.update(dt)
