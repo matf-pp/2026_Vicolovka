@@ -181,6 +181,7 @@ local function map_expand(map)
 end
 
 local function create_roads(map)
+    -- TODO uvesti dodatni pregled mrtvih puteva
     for y = 1, #map do
         for x = 1, #map[1] do
             if y >= 7 and y <= 9 and x >= 1 and x <= 3 then
@@ -231,8 +232,8 @@ local function reflect_matrix(map)
 end
 
 function Gen_Map(width, height)
-    local row = (height + 1) / 2 
-    local col = ((width / 2) + 1) / 2
+    local row = (height + 1) / 2  -- map_expand | height = (height * 2) - 1 | ovo je f^-1 da se dobija unesena visina
+    local col = ((width / 2) + 1) / 2 -- map_expand radi isto plus reflect koji duplira | ovo je f^-1 da se dobije unesena sirina
 
     local map = map_init(col, row)
 

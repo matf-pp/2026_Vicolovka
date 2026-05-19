@@ -1,36 +1,39 @@
-require("mapGen")
+require "Object"
+require "Character"
+require "mapGen"
 
-Map = Gen_Map(26, 21)
+Map = Gen_Map(18, 17) -- pogledaj mapGen functions za odredjivanje dimenzija
 
-local tileSize = 16;
+local tileSize = 40;
+
+world = love.physics.newWorld(0,0)
+
+entities = {} -- TODO: add all entities to this table than load with foreach
 
 function love.load()
-        love.window.setMode(1600, 900)
-        player = {}
-        player.x = 8 * tileSize + 20
-        player.y = 13 * tileSize + 20
-        player.speed = 128
+        love.window.setMode(800, 600)
+        
+        --player load
+        player = Character:new(world, 9 * tileSize, 13 * tileSize, 25, 35, 128) -- namestio sam spawn na 9 col 13 row
+
+        --screen borders load
+        addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
+        
 end
 
 function love.update(dt)
-        if love.keyboard.isDown("right") then
-                player.x = player.x + player.speed * dt
-        end
-        if love.keyboard.isDown("left") then
-                player.x = player.x - player.speed * dt
-        end
-        if love.keyboard.isDown("up") then
-                player.y = player.y - player.speed * dt
-        end
-        if love.keyboard.isDown("down") then
-                player.y = player.y + player.speed * dt
-        end
+        world:update(dt)
+
+        --player upadate
+        player:update(dt) 
+        
+                           
 
 end
 
 function love.draw()
-        for y, row in ipairs(Map) do
-                for x, tile in ipairs(row) do
+        for y, row in ipairs(Map) do          --this is tmp test map 
+                for x, tile in ipairs(row) do --TODO: implement map as objects
                         if tile == -1 then
                                 love.graphics.setColor(0.8, 0.8, 0.8)
                         elseif tile == -2 then
@@ -41,7 +44,30 @@ function love.draw()
                         love.graphics.rectangle("fill", (x-1)*tileSize, (y-1)*tileSize, tileSize, tileSize)
                 end
         end
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.circle("fill", player.x, player.y, tileSize / 2)
-        love.graphics.setColor(0.2, 0.2, 0.2)
+
+        --adds borders outside the window
+        drawWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
+        
+        -- player draw
+        player:render()
+
 end
+
+function addWindowBorders (sizeX, sizeY) 
+        -- wrapper func creates screen borders as objects on edges of screen
+        upperBound = Object:new(world, 0, -100, sizeX, 100, "static")
+        lowerBound = Object:new(world, 0, sizeY, sizeX, 100, "static")
+        leftBound = Object:new(world, -100, 0, 100, sizeY, "static")
+        rightBound = Object:new(world, sizeX, 0, 100, sizeY, "static")
+
+end
+
+function drawWindowBorders ()
+        -- wrapper func draws 4 rectangles on the edges of screen
+        upperBound:render()
+        lowerBound:render()
+        leftBound:render()
+        rightBound:render()
+         
+end
+
