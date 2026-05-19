@@ -1,25 +1,14 @@
-Map = {
-        {1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-        {1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-        {1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-        {1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-}
+require("mapGen")
 
-local tileSize = 50;
+Map = Gen_Map(26, 21)
+
+local tileSize = 16;
 
 function love.load()
-        love.window.setMode(800, 600)
+        love.window.setMode(1600, 900)
         player = {}
-        player.x = 1 * tileSize + 20
-        player.y = 0 * tileSize + 20
+        player.x = 8 * tileSize + 20
+        player.y = 13 * tileSize + 20
         player.speed = 128
 end
 
@@ -39,17 +28,20 @@ function love.update(dt)
 
 end
 
-
 function love.draw()
         for y, row in ipairs(Map) do
                 for x, tile in ipairs(row) do
-                        if tile == 1 then
-                                love.graphics.setColor(0.2, 0.2, 0.2)
-                        else
+                        if tile == -1 then
                                 love.graphics.setColor(0.8, 0.8, 0.8)
+                        elseif tile == -2 then
+                                love.graphics.setColor(0.5, 0.5, 0.5)
+                        else
+                                love.graphics.setColor(0.2, 0.2, 0.2)
                         end
                         love.graphics.rectangle("fill", (x-1)*tileSize, (y-1)*tileSize, tileSize, tileSize)
                 end
         end
-        love.graphics.circle("fill", player.x, player.y, 20)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.circle("fill", player.x, player.y, tileSize / 2)
+        love.graphics.setColor(0.2, 0.2, 0.2)
 end
