@@ -2,6 +2,9 @@
 Object = { 
     x = 0,
     y = 0,
+    local_x = 1,
+    local_y = 1,
+    tile_type = "",
     height = 0,
     width = 0,
     texture = nil,
@@ -13,6 +16,8 @@ function Object:new(world, x, y, width, height, type)
     local this = {
         x = x,
         y = y,
+        local_x = 1, -- dodatne kordinate za vece slike poput ghostBox za obican tile su default 1 1
+        local_y = 1,
         width = width,
         height = height,
         texture = nil, -- TODO: make textures
@@ -27,12 +32,20 @@ function Object:new(world, x, y, width, height, type)
 
 end
 
-function Object:render()
-    --if self.texture then
-    --    love.graphics.texture(texture, self.x, self.y) -- TODO: make texture
-    --end
+function Object:renderTile()
+    if self.texture then
+        --local texture = love.graphics.newImage(self.texture)
+        love.graphics.draw(self.texture, (self.x-1)*self.width, (self.y-1)*self.height) -- TODO: make texture
+    end
     love.graphics.setColor(1,1,1)
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+end
+
+function Object:render()
+    if self.texture then
+        --local texture = love.graphics.newImage(self.texture)
+        love.graphics.draw(self.texture, self.x, self.y) -- TODO: make texture
+    end
+    love.graphics.setColor(1,1,1)
 end
 
 function makeCollider(world, obj, type)

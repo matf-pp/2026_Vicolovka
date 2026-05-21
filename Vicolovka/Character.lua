@@ -2,14 +2,14 @@
 Character = setmetatable({}, Object)
 Character.__index = Character
 
---local playerTexture = ... TODO: make texture
+local playerTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
 
 function Character:new(world, x, y, width, height, speed) 
     local this = Object:new(world, x, y, width, height, "dynamic")
     setmetatable(this, self)
     this.speed = speed
 
-    --this.texture = playerTexture
+    this.texture = playerTexture
     return this
 end
 

@@ -1,3 +1,5 @@
+require "Object"
+
 math.randomseed(os.time())
 
 O_shape = {{0,0}}
@@ -8,7 +10,7 @@ X_shape = {{0,0}, {1, 0}, {2, 0}, {1, -1}, {1, 1}}
 
 Shapes = {O_shape, I_shape, L_shape, T_shape, X_shape}
 
-local function map_init(width, height)
+local function grid_init(width, height)
     local map = {}
     for row = 1, height do
         map[row] = {}
@@ -47,6 +49,7 @@ local function put_start(map)
 end
 
 local function check_shape(x, y, shape, map)
+
     for i = 1, #shape do
         local dx = shape[i][1]
         local dy = shape[i][2]
@@ -54,7 +57,9 @@ local function check_shape(x, y, shape, map)
         local target_x = x + dx
         local target_y = y + dy
 
-            
+        --dead_end_check[1] = dead_end_check[1] + dx
+        --dead_end_check[2] = dead_end_check[2] + dy
+
         if target_y < 1 or target_y > #map or target_x < 1 or target_x > #map[1] then
             return false
         elseif y == 7 and dy == 1 then
@@ -154,7 +159,7 @@ local function tetris_gen(map)
 
 end
 
-local function map_expand(map)
+local function grid_expand(map)
     local row = #map
     local col = #map[1]
 
@@ -206,7 +211,7 @@ local function create_roads(map)
     end
 end
 
-local function reflect_matrix(map)
+local function reflect_grid(map)
     local row = #map
     local col = #map[1]
 
@@ -231,17 +236,118 @@ local function reflect_matrix(map)
     return re_map
 end
 
-function Gen_Map(width, height)
+local function dfs(x, y, visited, map)
+    visited[y][x] = 1;
+
+    for i = -1, 1 do
+        for j = -1, 1 do
+            if(y + i >= 1 and y + i <= #map and x + j >= 1 and x + j <= #map[1]) then
+                if(visited[y + i][x + j] == 0 and map[y + i][x + j] == -1) then
+                    visited[y + i][x + j] = 1
+                    dfs(x + j, y + i, visited, map)
+                end
+            end
+        end
+    end
+end
+
+local function clear_dead_ends(map, start_x, start_y)
+    local visited = {}
+    for i = 1, #map do
+        visited[i] = {}
+        for j = 1, #map[1] do
+            visited[i][j] = 0;
+        end
+    end
+
+
+    dfs(start_x, start_y, visited, map)
+
+    for i = 1, #map do
+        for j = 1, #map[1] do
+            if map[i][j] == -1 and visited[i][j] == 0 then
+                map[i][j] = 1
+            end
+        end
+    end
+end
+
+local function uniform_grid(grid)
+    for i = 1, #grid do
+        for j = 1, #grid[i] do
+            if grid[i][j] > -1 then
+                grid[i][j] = 1
+            elseif grid[i][j] == -1 then
+                grid[i][j] = 0
+            end
+        end
+    end
+end
+
+local function get_tileType(x, y, grid)
+    if grid[y][x] == -2 then
+        return "ghostBox"
+    elseif grid[y][x] == 1 then
+        return "wall"
+    else
+        return "path"
+    end
+end
+
+local function make_map(grid, map, tileSize, world)
+    local largeStructY = nil
+    local largeStructX = nil
+
+    for y = 1, #grid do
+        map[y] = {}
+        for x = 1, #grid[y] do
+            
+            local tileType = get_tileType(x, y, grid)
+            local tile = Object:new(world, x, y, tileSize, tileSize, "static")
+            local texture
+            
+            if tileType == "ghostBox" then
+                if not largeStructY then
+                    largeStructY = y
+                    largeStructX = x
+                end
+
+                tile.local_x = (x - largeStructX) + 1
+                tile.local_y = (y - largeStructY) + 1     
+
+                --texture = love.graphics.newImage("Assets/Vicolovka_ghostBox.png") TODO make img
+                tile.texture = nil
+            elseif tileType == "wall" then
+
+                texture = love.graphics.newImage("Assets/Vicolovka_grass.png")
+                tile.texture = texture
+            else
+                texture = love.graphics.newImage("Assets/Vicolovka_path.png")
+                tile.texture = texture
+            end
+
+            tile.tile_type = tileType
+            map[y][x] = tile
+        end
+    end
+end
+
+function Gen_Map(width, height, tileSize, world)
     local row = (height + 1) / 2  -- map_expand | height = (height * 2) - 1 | ovo je f^-1 da se dobija unesena visina
     local col = ((width / 2) + 1) / 2 -- map_expand radi isto plus reflect koji duplira | ovo je f^-1 da se dobije unesena sirina
 
-    local map = map_init(col, row)
+    local grid = grid_init(col, row)
 
-    tetris_gen(map)
-    map = map_expand(map)
-    create_roads(map)
-    map = reflect_matrix(map)
+    tetris_gen(grid)
+    grid = grid_expand(grid)
+    create_roads(grid)
+    grid = reflect_grid(grid)
+    clear_dead_ends(grid, 14, 9)
+    uniform_grid(grid)
+
+    local map = {}
+
+    make_map(grid, map, tileSize, world)
 
     return map
 end
-
