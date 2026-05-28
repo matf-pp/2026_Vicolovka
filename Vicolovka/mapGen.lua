@@ -2,6 +2,11 @@ require "Object"
 
 math.randomseed(os.time())
 
+--render tile img before using them to save time
+PathTile = love.graphics.newImage("Assets/Vicolovka_path.png")
+Walltile = love.graphics.newImage("Assets/Vicolovka_grass.png")
+--GhostBox = love.graphics.newImage("Assets/Vicolovka_ghostBox.png")
+
 O_shape = {{0,0}}
 I_shape = {{0,0}, {0, 1}}
 L_shape = {{0,0}, {-1, 0}, {0, 1}}
@@ -315,14 +320,14 @@ local function make_map(grid, map, tileSize, world)
                 tile.local_x = (x - largeStructX) + 1
                 tile.local_y = (y - largeStructY) + 1     
 
-                --texture = love.graphics.newImage("Assets/Vicolovka_ghostBox.png") TODO make img
+                --texture = GhostBox : TODO make GhostBox img
                 tile.texture = nil
             elseif tileType == "wall" then
 
-                texture = love.graphics.newImage("Assets/Vicolovka_grass.png")
+                texture = Walltile
                 tile.texture = texture
             else
-                texture = love.graphics.newImage("Assets/Vicolovka_path.png")
+                texture = PathTile
                 tile.texture = texture
             end
 

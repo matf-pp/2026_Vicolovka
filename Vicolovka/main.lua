@@ -2,18 +2,15 @@ require "Object"
 require "Character"
 require "mapGen"
 
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- COMENTAR ZA OGNJENA!!!! PROVERI STA HOCES DA BUDE GLOBALNO A STA LOCALNO!!!!!!!!!! IDU MI NA KURAC PLAVE LINIJE!!!!! 
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-world = love.physics.newWorld(0,0)
+World = love.physics.newWorld(0,0)
 
 local tileSize = 32;
 
 Map_width = 26
 Map_height = 21
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
-Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
+Map = Gen_Map(Map_width, Map_height, tileSize, World) -- pogledaj mapGen functions za odredjivanje dimenzija 
 
 
 
@@ -23,14 +20,13 @@ local forest = love.graphics.newImage("Assets/Vicolovka_forest.png")
 --local pathtile = love.graphics.newImage("Assets/Vicolovka_path.png")
 
 
-
 entities = {} -- TODO: add all entities to this table than load with foreach
 
 function love.load()
         love.window.setMode(Map_width*tileSize, Map_height*tileSize)
         
         --player load
-        player = Character:new(world, 9 * tileSize, 13 * tileSize, 10, 20, 128) -- namestio sam spawn na 9 col 13 row
+        player = Character:new(World, 9 * tileSize, 13 * tileSize, 10, 20, 128) -- namestio sam spawn na 9 col 13 row
 
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
@@ -38,7 +34,7 @@ function love.load()
 end
 
 function love.update(dt)
-        world:update(dt)
+        World:update(dt)
 
         --player upadate
         player:update(dt) 
@@ -69,10 +65,10 @@ end
 
 function addWindowBorders (sizeX, sizeY) 
         -- wrapper func creates screen borders as objects on edges of screen
-        upperBound = Object:new(world, 0, -100, sizeX, 100, "static")
-        lowerBound = Object:new(world, 0, sizeY, sizeX, 100, "static")
-        leftBound = Object:new(world, -100, 0, 100, sizeY, "static")
-        rightBound = Object:new(world, sizeX, 0, 100, sizeY, "static")
+        upperBound = Object:new(World, 0, -100, sizeX, 100, "static")
+        lowerBound = Object:new(World, 0, sizeY, sizeX, 100, "static")
+        leftBound = Object:new(World, -100, 0, 100, sizeY, "static")
+        rightBound = Object:new(World, sizeX, 0, 100, sizeY, "static")
 
 end
 
