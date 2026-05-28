@@ -2,10 +2,6 @@ require "Object"
 require "Character"
 require "mapGen"
 
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- COMENTAR ZA OGNJENA!!!! PROVERI STA HOCES DA BUDE GLOBALNO A STA LOCALNO!!!!!!!!!! IDU MI NA KURAC PLAVE LINIJE!!!!! 
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 world = love.physics.newWorld(0,0)
 
 local tileSize = 32;
@@ -30,7 +26,7 @@ function love.load()
         love.window.setMode(Map_width*tileSize, Map_height*tileSize)
         
         --player load
-        player = Character:new(world, 9 * tileSize, 13 * tileSize, 10, 20, 128) -- namestio sam spawn na 9 col 13 row
+        player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
 
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
@@ -69,10 +65,10 @@ end
 
 function addWindowBorders (sizeX, sizeY) 
         -- wrapper func creates screen borders as objects on edges of screen
-        upperBound = Object:new(world, 0, -100, sizeX, 100, "static")
-        lowerBound = Object:new(world, 0, sizeY, sizeX, 100, "static")
-        leftBound = Object:new(world, -100, 0, 100, sizeY, "static")
-        rightBound = Object:new(world, sizeX, 0, 100, sizeY, "static")
+        upperBound = Object:new(world, sizeX/2, -50, sizeX, 100, sizeX, 100, "static")
+        lowerBound = Object:new(world, sizeX/2, sizeY + 50, sizeX, 100, sizeX, 100, "static")
+        leftBound = Object:new(world, -50, sizeY/2, 100, sizeY, 100, sizeY, "static")
+        rightBound = Object:new(world, sizeX + 50, sizeY/2, 100, sizeY, 100, sizeY, "static")
 
 end
 

@@ -297,13 +297,22 @@ end
 local function make_map(grid, map, tileSize, world)
     local largeStructY = nil
     local largeStructX = nil
+    --ovde pozivam jednom funkciju mesto u petlji svaki put
+    local grassTexture = love.graphics.newImage("Assets/Vicolovka_grass.png")
+    local pathTexture = love.graphics.newImage("Assets/Vicolovka_path.png")
 
     for y = 1, #grid do
         map[y] = {}
         for x = 1, #grid[y] do
             
             local tileType = get_tileType(x, y, grid)
-            local tile = Object:new(world, x, y, tileSize, tileSize, "static")
+
+            --podelio sam tile na wall i path i pozvao odvojene konstruktore            
+            if tileType == "wall" or tileType == "ghostBox" then
+                tile = Object:new(world, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
+            elseif tileType == "path" then
+                tile = Object:new(nil, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
+            end
             local texture
             
             if tileType == "ghostBox" then
@@ -319,10 +328,10 @@ local function make_map(grid, map, tileSize, world)
                 tile.texture = nil
             elseif tileType == "wall" then
 
-                texture = love.graphics.newImage("Assets/Vicolovka_grass.png")
+                texture = grassTexture
                 tile.texture = texture
             else
-                texture = love.graphics.newImage("Assets/Vicolovka_path.png")
+                texture = pathTexture
                 tile.texture = texture
             end
 
