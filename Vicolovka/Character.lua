@@ -1,11 +1,12 @@
---tamplate used for plater/enemy atributes
+--tamplate used for player atributes
 Character = setmetatable({}, Object)
 Character.__index = Character
 
 local playerTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
+local width, height = playerTexture:getDimensions()
 
-function Character:new(world, x, y, width, height, speed) 
-    local this = Object:new(world, x, y, width, height, "dynamic")
+function Character:new(world, x, y, speed) 
+    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.75, "dynamic")
     setmetatable(this, self)
     this.speed = speed
 

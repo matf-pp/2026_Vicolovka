@@ -2,7 +2,6 @@ require "Object"
 require "Character"
 require "mapGen"
 
-
 World = love.physics.newWorld(0,0)
 
 local tileSize = 32;
@@ -26,7 +25,7 @@ function love.load()
         love.window.setMode(Map_width*tileSize, Map_height*tileSize)
         
         --player load
-        player = Character:new(World, 9 * tileSize, 13 * tileSize, 10, 20, 128) -- namestio sam spawn na 9 col 13 row
+        player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
 
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
@@ -65,10 +64,10 @@ end
 
 function addWindowBorders (sizeX, sizeY) 
         -- wrapper func creates screen borders as objects on edges of screen
-        upperBound = Object:new(World, 0, -100, sizeX, 100, "static")
-        lowerBound = Object:new(World, 0, sizeY, sizeX, 100, "static")
-        leftBound = Object:new(World, -100, 0, 100, sizeY, "static")
-        rightBound = Object:new(World, sizeX, 0, 100, sizeY, "static")
+        upperBound = Object:new(world, sizeX/2, -50, sizeX, 100, sizeX, 100, "static")
+        lowerBound = Object:new(world, sizeX/2, sizeY + 50, sizeX, 100, sizeX, 100, "static")
+        leftBound = Object:new(world, -50, sizeY/2, 100, sizeY, 100, sizeY, "static")
+        rightBound = Object:new(world, sizeX + 50, sizeY/2, 100, sizeY, 100, sizeY, "static")
 
 end
 
