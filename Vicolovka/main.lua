@@ -2,21 +2,29 @@ require "Object"
 require "Character"
 require "mapGen"
 
-World = love.physics.newWorld(0,0)
+world = love.physics.newWorld(0,0)
+
+--[[
+mapSizes(width x Height) :
+                18x17 rez -> 576x544
+                26x21 rez -> 832x672
+                34x25 rez -> 1088x800
+                42x29 rez -> 1344x928
+                50x33 rez -> 1600x1056
+]]
 
 local tileSize = 32;
 
 Map_width = 26
 Map_height = 21
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
-Map = Gen_Map(Map_width, Map_height, tileSize, World) -- pogledaj mapGen functions za odredjivanje dimenzija 
+Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
 
 
 
--- dodate promenljive samo za test tekstura
+
 local forest = love.graphics.newImage("Assets/Vicolovka_forest.png")
---local walltile = love.graphics.newImage("Assets/Vicolovka_grass.png")
---local pathtile = love.graphics.newImage("Assets/Vicolovka_path.png")
+
 
 
 entities = {} -- TODO: add all entities to this table than load with foreach
@@ -33,7 +41,7 @@ function love.load()
 end
 
 function love.update(dt)
-        World:update(dt)
+        world:update(dt)
 
         --player upadate
         player:update(dt) 
@@ -45,12 +53,7 @@ end
 function love.draw()
         for y, row in ipairs(Map) do          --this is tmp test map 
                 for x, tile in ipairs(row) do   --TODO: implement map as objects
-                        if tile.tile_type ~= "ghostBox" then
-                                tile:renderTile()
-                                if tile.tile_type == "wall" then
-                                        love.graphics.draw(forest, (x-1)*tileSize, (y-1)*tileSize - 8)
-                                end
-                        end
+                        tile:renderTile()
                 end
         end
 

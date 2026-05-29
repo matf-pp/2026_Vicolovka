@@ -40,8 +40,14 @@ end
 
 function Object:renderTile()
     if self.texture then
-        --local texture = love.graphics.newImage(self.texture)
-        love.graphics.draw(self.texture, self.x - self.width/2, self.y - self.height/2) -- (self.x-1)*self.width (self.y-1)*self.height
+        if self.tile_type == "ghostBox" then
+            love.graphics.draw(self.texture, self.quad, self.x - self.width/2, self.y - self.height/2)
+        else
+            love.graphics.draw(self.texture, self.x - self.width/2, self.y - self.height/2) -- (self.x-1)*self.width (self.y-1)*self.height
+            if self.entitie then
+                love.graphics.draw(self.entitie.texture, self.x - self.width/2 + self.entitie.x_offset, self.y - self.height/2 + self.entitie.y_offset)
+            end
+        end
     end
     love.graphics.setColor(1,1,1)
 end

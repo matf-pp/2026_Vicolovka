@@ -1,11 +1,9 @@
 require "Object"
+require "Entities"
 
 math.randomseed(os.time())
 
---render tile img before using them to save time
-PathTile = love.graphics.newImage("Assets/Vicolovka_path.png")
-Walltile = love.graphics.newImage("Assets/Vicolovka_grass.png")
---GhostBox = love.graphics.newImage("Assets/Vicolovka_ghostBox.png")
+
 
 O_shape = {{0,0}}
 I_shape = {{0,0}, {0, 1}}
@@ -305,6 +303,7 @@ local function make_map(grid, map, tileSize, world)
     --ovde pozivam jednom funkciju mesto u petlji svaki put
     local grassTexture = love.graphics.newImage("Assets/Vicolovka_grass.png")
     local pathTexture = love.graphics.newImage("Assets/Vicolovka_path.png")
+    local ghostBox = love.graphics.newImage("Assets/Vicolovka_GhostBox_empty.png")
 
     for y = 1, #grid do
         map[y] = {}
@@ -312,13 +311,16 @@ local function make_map(grid, map, tileSize, world)
             
             local tileType = get_tileType(x, y, grid)
 
+            local tile
             --podelio sam tile na wall i path i pozvao odvojene konstruktore            
             if tileType == "wall" or tileType == "ghostBox" then
                 tile = Object:new(world, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
             elseif tileType == "path" then
                 tile = Object:new(nil, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
             end
-            local texture
+            
+            tile.tile_type = tileType
+            tile.entitie = nil
             
             if tileType == "ghostBox" then
                 if not largeStructY then
@@ -326,21 +328,27 @@ local function make_map(grid, map, tileSize, world)
                     largeStructX = x
                 end
 
-                tile.local_x = (x - largeStructX) + 1
-                tile.local_y = (y - largeStructY) + 1     
+                local x_offset = x - largeStructX
+                local y_offset = y - largeStructY
 
-                --texture = GhostBox : TODO make GhostBox img
-                tile.texture = nil
+                tile.local_x =  x_offset * tileSize
+                tile.local_y =  y_offset * tileSize
+
+
+                tile.quad = love.graphics.newQuad(tile.local_x, tile.local_y, tileSize, tileSize, ghostBox)
+                tile.texture = ghostBox
             elseif tileType == "wall" then
 
-                texture = grassTexture
-                tile.texture = texture
+                
+                tile.texture = grassTexture
+                tile.entitie = Entities.create("forest")
             else
-                texture = pathTexture
-                tile.texture = texture
+                
+                tile.texture = pathTexture
+                tile.entitie = nil -- TODO implement algorithm for assigning entities to path tiles
             end
 
-            tile.tile_type = tileType
+            
             map[y][x] = tile
         end
     end
