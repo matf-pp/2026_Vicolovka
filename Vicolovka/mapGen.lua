@@ -314,7 +314,7 @@ local function make_map(grid, map, tileSize, world)
             local tile
             --podelio sam tile na wall i path i pozvao odvojene konstruktore            
             if tileType == "wall" or tileType == "ghostBox" then
-                tile = Object:new(world, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
+                tile = Object:new(world, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static", "wall")
             elseif tileType == "path" then
                 tile = Object:new(nil, (x-1)*tileSize + tileSize/2, (y-1)*tileSize + tileSize/2, tileSize, tileSize, tileSize, tileSize, "static")
             end

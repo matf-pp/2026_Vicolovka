@@ -6,7 +6,7 @@ local playerTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
 local width, height = playerTexture:getDimensions()
 
 function Character:new(world, x, y, speed) 
-    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.75, "dynamic")
+    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.75, "dynamic", "player")
     setmetatable(this, self)
     this.speed = speed
 

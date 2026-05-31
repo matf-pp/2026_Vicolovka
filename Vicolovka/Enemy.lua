@@ -1,148 +1,235 @@
+require "AStar"
+
 Enemy = setmetatable({}, Object)
 Enemy.__index = Enemy
 
 --local enemyTexture = ...
 --local width, height = enemyTexture:getDimensions() TODO:enemy texture
+--tmp asset:
+local enemyTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
+local width, height = enemyTexture:getDimensions()
 
-function Enemy:new(world, x, y, speed, type) 
-    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.85, "dynamic")
+function Enemy:findScatterTarget()
+    if self.enemyType == "normal" then
+        for y = 1, #Map do
+            for x = Map_width, 1, -1 do
+                if isWalkable(Map[y][x]) then
+                    return x, y
+                end
+            end
+        end
+    elseif self.enemyType == "ambush" then
+        for y = 1, #Map do
+            for x = 1,#Map[1] do
+                if isWalkable(Map[y][x]) then
+                    return x, y
+                end
+            end
+        end
+    elseif self.enemyType == "normalWatcher" then
+        for y = Map_height, 1, -1 do
+            for x = 1, Map_width do
+                if isWalkable(Map[y][x]) then
+                    return x, y
+                end
+            end
+        end
+    end
+end
+
+function Enemy:new(world, x, y, speed, enemyType) 
+    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.8, "dynamic", "enemy")
     setmetatable(this, self)
     this.speed = speed
     this.enemyType = enemyType
+    this.path = nil
+    this.pathIndex = 1
+    this.repathTimer = 0
+
+    this.mode = "scatter"
+    this.modeTimer = 7
+    this.scatterCounter = 1
+    this.scatterDuration = 7
+    this.chaseDuration = 25
+
+    this.scatterX, this.scatterY = this:findScatterTarget()
+
+    if enemyType == "normalWatcher" then
+        this.watchedChildX = nil
+        this.watchedChildY = nil
+        this.playerTriggered = false
+
+        if #List_of_kids > 0 then
+            this.watchedChildX = List_of_kids[1][1]
+            this.watchedChildY = List_of_kids[1][2]
+        end
+    end
 
     this.texture = enemyTexture
     return this
 end
 
-function Character:update(dt) -- TODO: make pathfinding
-    local dx, dy = 0, 0
-    if love.keyboard.isDown("right") then
-        dx = self.speed
+local function worldToTile(x, y, tileSize)
+    local tileX = math.floor(x / tileSize) + 1
+    local tileY = math.floor(y / tileSize) + 1
+
+    return tileX, tileY
+end
+
+function Enemy:findChaseTarget(px, py)
+    
+
+    local tx, ty = worldToTile(px, py, tileSize)
+
+    if self.enemyType == "normal" then
+        return tx, ty
+    elseif self.enemyType == "ambush" then
+        local offsetX = 0
+        local offsetY = 0
+
+        if love.keyboard.isDown("up") then
+            offsetY = -5
+        elseif love.keyboard.isDown("down") then
+            offsetY = 5
+        elseif love.keyboard.isDown("left") then
+            offsetX = -5
+        elseif love.keyboard.isDown("right") then
+            offsetX = 5
+        end
+
+        tx = tx + offsetX
+        ty = ty + offsetY
+
+        tx = math.max(1, math.min(tx, Map_width))
+        ty = math.max(1, math.min(ty, Map_height))
+
+        return tx, ty
     end
-    if love.keyboard.isDown("left") then
-        dx = - self.speed
+
+    if self.enemyType == "normalWatcher" then
+        return tx, ty
     end
-    if love.keyboard.isDown("up") then
-        dy = - self.speed
+
+end
+
+function Enemy:switchMode()
+    if self.enemyType == "normal" or self.enemyType == "ambush" then
+        if self.mode == "chase" and self.scatterCounter <= 3 then
+            self.mode = "scatter"
+            self.modeTimer = self.scatterDuration   
+            self.scatterCounter = self.scatterCounter + 1
+        else
+            self.mode = "chase"
+            self.modeTimer = self.chaseDuration
+        end
+    elseif self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
+        if self.playerTriggered then
+            self.mode = "chase"
+            self.modeTimer = self.chaseDuration
+            return
+        end
     end
-    if love.keyboard.isDown("down") then
-        dy = self.speed
+    self.path = nil
+    self.pathIndex = 1
+end
+
+
+
+function Enemy:update(dt) 
+    self.modeTimer = self.modeTimer - dt
+    self.repathTimer = self.repathTimer - dt
+
+    if self.modeTimer <= 0 then
+        self:switchMode()
     end
-    self.body:setLinearVelocity(dx, dy)
+
+    if self.repathTimer <= 0 then
+        local enemyX, enemyY = self.body:getPosition()
+        
+
+        local startX, startY = worldToTile(enemyX, enemyY, tileSize)
+
+        local endX, endY 
+
+        if self.enemyType == "normal" or self.enemyType == "ambush" then
+
+            if self.mode == "chase" then
+                local px, py = player.body:getPosition()
+                endX, endY = self:findChaseTarget(px, py)
+            
+            else
+                endX = self.scatterX
+                endY = self.scatterY
+            end
+
+        elseif self.enemyType == "normalWatcher" then
+        
+            if not self.playerTriggered then
+            
+                if self.mode == "chase" then
+                    endX = self.watchedChildX
+                    endY = self.watchedChildY
+                else
+                    endX = self.scatterX
+                    endY = self.scatterY
+                end
+            
+            else
+                local px, py = player.body:getPosition()
+                endX, endY = self:findChaseTarget(px, py)
+            end
+        end
+
+        if self.enemyType == "normalWatcher" and not self.playerTriggered then
+
+            local px, py = player.body:getPosition()
+            local ptx, pty = worldToTile(px, py, tileSize)
+
+            if ptx == self.watchedChildX and pty == self.watchedChildY then
+                self.playerTriggered = true
+                self:switchMode()
+            end
+        end
+
+        self.path = AStar(Map, startX, startY, endX, endY)
+
+        self.pathIndex = 1
+        self.repathTimer = 1
+    end
+
+    if self.path and self.path[self.pathIndex] then
+        local node = self.path[self.pathIndex]
+
+        local targetX = (node.x - 1) * tileSize + tileSize/2
+
+        local targetY = (node.y - 1) * tileSize + tileSize/2
+
+        local ex, ey = self.body:getPosition()
+
+        local dx = targetX - ex
+        local dy = targetY - ey
+
+        local dist = math.sqrt(dx*dx + dy*dy)
+
+        if dist < 10 then
+
+            self.body:setPosition(targetX, targetY)
+
+            self.body:setLinearVelocity(0, 0)
+
+            self.pathIndex = self.pathIndex + 1
+            --if self.mode == "scatter" and self.pathIndex > #self.path then
+            --    self:switchMode()
+            --end
+        else
+            dx = dx / dist
+            dy = dy / dist
+
+            self.body:setLinearVelocity(dx * self.speed, dy * self.speed)
+        end
+    else
+        self.body:setLinearVelocity(0,0)
+    end
     self.x, self.y = self.body:getPosition()
 end
 
-local node = {
-    x = 0,
-    y = 0,
-    g = 0, -- currrent path length
-    h = 0, -- est. path length
-    f = 0, -- g + h
-    parent = nil
-}
-
-local function distance(x1, y1, x2, y2) -- manhattan distance from node to node
-    return math.abs(x1 - x2) + math.abs(y1 - y2)
-end
-
-local function nodeInList(list, x, y)
-    for _,node in ipairs(list) do
-        if node.x == x and node.y == y then
-            return node
-        end
-    end
-    return nil
-end
-
-function isWalkable(tile)
-    return tile.tile_type == "path" or "ghostBox"
-end
-
-function A*(Map, startX, startY, endX, endY)
-    local openSet = {}
-    local closedSet = {}
-
-    local startNode = {
-        x = startX,
-        y = startY,
-        g = 0,
-        h = distance(startX, startY, endX, endY)
-    }
-
-    startNode.f = startNode.g + startNode.h
-
-    table.insert(openSet, startNode)
-
-    while #openSet > 0 do
-        local currIndex = 1
-        local current = openSet[1]
-
-        for i, node in ipairs(openSet) do
-            if node.f < current.f then
-                current = node
-                currIndex = i
-            end
-        end
-
-        if current.x == endX and current.y == endY then
-
-            local path = {}
-
-            while current do
-                table.insert(path, 1, {x = current.x, y = current.y})
-                current = current.parent
-            end
-            return path
-        end
-
-        table.remove(openSet, currIndex)
-        table.insert(closedSet, current)
-
-        local directions = {
-            {1, 0},
-            {-1, 0},
-            {0, 1},
-            {0, -1}
-        }
-
-        for _, dir in ipairs(directions) do
-            
-            local nx = current.x + dir[1]
-            local ny = current.y + dir[2]
-
-            if nx >= 1 and ny >= 1 and ny <= #grid and nx <= #grid[1] then
-
-                if isWalkable(Map[nx][ny]) then
-
-                    if not nodeInList(closedSet, nx, ny) then
-
-                        local g = current.g + 1
-                        local h = distance(nx, ny, endX, endY)
-                        local f = g + h
-
-                        local existing = nodeInList(openSet, nx, ny)
-
-                        if not existing then
-
-                            table.insert(openSet, {
-                                x = nx,
-                                y = ny,
-                                g = g,
-                                h = h,
-                                f = f,
-                                parent = current
-                            })
-
-                        elseif g < existing.g then
-                            existing.g = g
-                            existing.f = g + existing.h
-                            existing.parent = current
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    return nil
-end
