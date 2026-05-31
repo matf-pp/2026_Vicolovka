@@ -1,6 +1,8 @@
 require "Object"
 require "Character"
+require "Enemy"
 require "mapGen"
+
 
 world = love.physics.newWorld(0,0)
 
@@ -13,7 +15,7 @@ mapSizes(width x Height) :
                 50x33 rez -> 1600x1056
 ]]
 
-local tileSize = 32;
+tileSize = 32;
 
 Map_width = 26
 Map_height = 21
@@ -35,6 +37,10 @@ function love.load()
         --player load
         player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
 
+        --enemy load
+        enemy1 = Enemy:new(world, 20*tileSize, 5*tileSize, 100, "normal")
+        enemy2 = Enemy:new(world, 20*tileSize, 5*tileSize, 100, "ambush")
+
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
         
@@ -45,6 +51,10 @@ function love.update(dt)
 
         --player upadate
         player:update(dt) 
+
+        --enemy update
+        enemy1:update(dt)
+        enemy2:upadate(dt)
         
                            
 
@@ -62,6 +72,10 @@ function love.draw()
         
         -- player draw
         player:render()
+
+        -- enemy draw
+        enemy1:render()
+        enemy2:render()
 
 end
 
