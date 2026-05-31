@@ -30,7 +30,7 @@ local startButton = {
 LVL = 1
 Map_width = 18
 Map_height = 17
-Num_kids = 1;
+Num_kids = 2;
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
 Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
 List_of_kids = {}
