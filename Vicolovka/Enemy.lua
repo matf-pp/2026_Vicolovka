@@ -176,13 +176,7 @@ function Enemy:update(dt)
     self.modeTimer = self.modeTimer - dt
     self.repathTimer = self.repathTimer - dt
 
-    --if self.modeTimer <= 0 then
-    --    if self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
-    --        self:switchMode2()
-    --    else
-    --        self:switchMode()
-    --    end
-    --end
+
     if self.enemyType ~= "normalWatcher" and
        self.enemyType ~= "ambushWatcher" then
 
