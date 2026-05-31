@@ -1,5 +1,6 @@
 require "Object"
 require "Character"
+require "Enemy"
 require "mapGen"
 require "Entities"
 
@@ -14,7 +15,7 @@ mapSizes(width x Height) :
                 50x33 rez -> 1600x1056
 ]]
 
-local tileSize = 32;
+tileSize = 32;
 
 GameState = "StarMenu"
 
@@ -52,6 +53,11 @@ function love.load()
         --player load
         player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
         Objectives = #List_of_kids
+
+        --enemy load
+        enemy1 = Enemy:new(world, 20 * tileSize, 15*tileSize, 100, "normal")
+        enemy2 = Enemy:new(world, 10 * tileSize, 17*tileSize, 100, "ambush")
+        enemy3 = Enemy:new(world, 25 * tileSize, 18*tileSize, 100, "normalWatcher")
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
         
@@ -69,6 +75,10 @@ function love.update(dt)
 
                 --player upadate
                 player:update(dt) 
+                --enemy update
+                enemy1:update(dt)
+                enemy2:update(dt)
+                enemy3:update(dt)
                 local player_x = math.floor(player.x / tileSize) + 1
                 local player_y = math.floor(player.y / tileSize) + 1 
                 local player_tile = nil
@@ -116,7 +126,11 @@ function love.draw()
                 drawWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
                 
                 -- player draw
-                player:render()     
+                player:render() 
+                -- enemy draw
+                enemy1:render()
+                enemy2:render() 
+                enemy3:render()   
         elseif GameState == "GameOver" then
         -- Crna pozadina za Game Over ekran
                 love.graphics.clear(0, 0, 0)
@@ -140,10 +154,10 @@ end
 
 function addWindowBorders (sizeX, sizeY) 
         -- wrapper func creates screen borders as objects on edges of screen
-        upperBound = Object:new(world, sizeX/2, -50, sizeX, 100, sizeX, 100, "static")
-        lowerBound = Object:new(world, sizeX/2, sizeY + 50, sizeX, 100, sizeX, 100, "static")
-        leftBound = Object:new(world, -50, sizeY/2, 100, sizeY, 100, sizeY, "static")
-        rightBound = Object:new(world, sizeX + 50, sizeY/2, 100, sizeY, 100, sizeY, "static")
+        upperBound = Object:new(world, sizeX/2, -50, sizeX, 100, sizeX, 100, "static", "wall")
+        lowerBound = Object:new(world, sizeX/2, sizeY + 50, sizeX, 100, sizeX, 100, "static", "wall")
+        leftBound = Object:new(world, -50, sizeY/2, 100, sizeY, 100, sizeY, "static", "wall")
+        rightBound = Object:new(world, sizeX + 50, sizeY/2, 100, sizeY, 100, sizeY, "static", "wall")
 
 end
 

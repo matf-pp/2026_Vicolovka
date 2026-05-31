@@ -10,11 +10,12 @@ Object = {
     hitboxWidth = 0,
     hitboxHeight = 0,
     texture = nil,
-    type = ""
+    type = "",
+    objectType = ""
 }
 Object.__index = Object
 
-function Object:new(world, x, y, width, height, hitboxWidth, hitboxHeight, type)
+function Object:new(world, x, y, width, height, hitboxWidth, hitboxHeight, type, objectType)
     local this = {
         x = x,
         y = y,
@@ -25,7 +26,8 @@ function Object:new(world, x, y, width, height, hitboxWidth, hitboxHeight, type)
         hitboxWidth = hitboxWidth,
         hitboxHeight = hitboxHeight,
         texture = nil, -- TODO: make textures
-        type = type
+        type = type,
+        objectType = objectType
     }
 
     setmetatable(this, self)
@@ -65,5 +67,14 @@ function makeCollider(world, obj, type)
     obj.shape = love.physics.newRectangleShape(obj.hitboxWidth, obj.hitboxHeight)
     obj.fixture = love.physics.newFixture(obj.body, obj.shape)
     obj.body:setFixedRotation(true)
+
+    if obj.objectType == "wall" then
+        obj.fixture:setCategory(1)
+    elseif obj.objectType == "enemy" then
+        obj.fixture:setCategory(2)
+        obj.fixture:setMask(2)
+    elseif obj.objectType == "player" then
+        obj.fixture:setCategory(3)
+    end
     
 end
