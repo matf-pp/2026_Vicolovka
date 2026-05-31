@@ -5,6 +5,7 @@ local entitiesDef = {
         --properties(if it has any)
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering(renders on x and y cords of the tile that has it)
         texture = love.graphics.newImage("Assets/Vicolovka_forest.png"),
         x_offset = 0,
@@ -16,6 +17,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_BreadCrumb.png"), -- make texture
         x_offset = 0,
@@ -26,6 +28,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = true,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_ChildMale.png"), -- make texture
         x_offset = 0,
@@ -36,6 +39,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = true,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_ChildFemale.png"), -- make texture
         x_offset = 0,
@@ -46,6 +50,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = true,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_Gun.png"),
         x_offset = 0,
@@ -56,6 +61,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_WitchBlue.png"),
         x_offset = 0,
@@ -65,6 +71,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_WitchRed.png"),
         x_offset = 0,
@@ -74,6 +81,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_WitchPurple.png"),
         x_offset = 0,
@@ -83,6 +91,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = false,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_WitchClyde.png"),
         x_offset = 0,
