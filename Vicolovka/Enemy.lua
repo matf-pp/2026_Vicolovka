@@ -3,9 +3,6 @@ require "AStar"
 Enemy = setmetatable({}, Object)
 Enemy.__index = Enemy
 
---local enemyTexture = ...
---local width, height = enemyTexture:getDimensions() TODO:enemy texture
---tmp asset:
 local enemyTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
 local width, height = enemyTexture:getDimensions()
 
