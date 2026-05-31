@@ -44,8 +44,8 @@ function Object:renderTile()
             love.graphics.draw(self.texture, self.quad, self.x - self.width/2, self.y - self.height/2)
         else
             love.graphics.draw(self.texture, self.x - self.width/2, self.y - self.height/2) -- (self.x-1)*self.width (self.y-1)*self.height
-            if self.entitie then
-                love.graphics.draw(self.entitie.texture, self.x - self.width/2 + self.entitie.x_offset, self.y - self.height/2 + self.entitie.y_offset)
+            if self.entity then
+                love.graphics.draw(self.entity.texture, self.x - self.width/2 + self.entity.x_offset, self.y - self.height/2 + self.entity.y_offset)
             end
         end
     end

@@ -320,7 +320,7 @@ local function make_map(grid, map, tileSize, world)
             end
             
             tile.tile_type = tileType
-            tile.entitie = nil
+            tile.entity = nil
             
             if tileType == "ghostBox" then
                 if not largeStructY then
@@ -341,11 +341,11 @@ local function make_map(grid, map, tileSize, world)
 
                 
                 tile.texture = grassTexture
-                tile.entitie = Entities.create("forest")
+                tile.entity = Entities.create("forest")
             else
                 
                 tile.texture = pathTexture
-                tile.entitie = nil -- TODO implement algorithm for assigning entities to path tiles
+                tile.entity = Entities.create("breadCrumb") -- TODO implement algorithm for assigning entities to path tiles
             end
 
             

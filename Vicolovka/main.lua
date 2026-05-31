@@ -2,7 +2,7 @@ require "Object"
 require "Character"
 require "Enemy"
 require "mapGen"
-
+require "Entities"
 
 world = love.physics.newWorld(0,0)
 
@@ -15,13 +15,16 @@ mapSizes(width x Height) :
                 50x33 rez -> 1600x1056
 ]]
 
-tileSize = 32;
+local tileSize = 32;
+
+GameState = "GameOn"
 
 Map_width = 26
 Map_height = 21
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
 Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
-
+List_of_kids = {}
+Entities.place_child(Map, 2, List_of_kids)
 
 
 
@@ -36,47 +39,57 @@ function love.load()
         
         --player load
         player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
-
-        --enemy load
-        enemy1 = Enemy:new(world, 20*tileSize, 5*tileSize, 100, "normal")
-        enemy2 = Enemy:new(world, 20*tileSize, 5*tileSize, 100, "ambush")
-
+        Objectives = #List_of_kids
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
         
 end
 
 function love.update(dt)
-        world:update(dt)
+        if GameState == "GameOn" then
+                world:update(dt)
+                if(Objectives <= 0) then
+                        TriggergameEnd()
+                end
 
-        --player upadate
-        player:update(dt) 
+                --player upadate
+                player:update(dt) 
+                local player_x = math.floor(player.x / tileSize) + 1
+                local player_y = math.floor(player.y / tileSize) + 1 
+                local player_tile = nil
 
-        --enemy update
-        enemy1:update(dt)
-        enemy2:upadate(dt)
-        
-                           
+                if Map[player_y] and Map[player_y][player_x] then
+                        player_tile = Map[player_y][player_x]
+                end
 
+
+                if player_tile ~= nil and player_tile.entity and player_tile.entity.isChild == true then
+                        Objectives = Objectives - 1
+                        player_tile.entity = nil
+                elseif player_tile ~= nil then
+                        player_tile.entity = nil
+                end     
+        end
 end
 
+
 function love.draw()
-        for y, row in ipairs(Map) do          --this is tmp test map 
-                for x, tile in ipairs(row) do   --TODO: implement map as objects
-                        tile:renderTile()
+        if GameState == "GameOn" then
+                for y, row in ipairs(Map) do          --this is tmp test map 
+                        for x, tile in ipairs(row) do   --TODO: implement map as objects
+                                tile:renderTile()
+                        end
                 end
+
+                --adds borders outside the window
+                drawWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
+                
+                -- player draw
+                player:render()     
+        elseif GameState == "GameOver" then
+                love.graphics.print("GAME OVER", 400, 300)
+                love.graphics.print("Press 'R' to Restart", 400, 350)
         end
-
-        --adds borders outside the window
-        drawWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
-        
-        -- player draw
-        player:render()
-
-        -- enemy draw
-        enemy1:render()
-        enemy2:render()
-
 end
 
 function addWindowBorders (sizeX, sizeY) 
@@ -94,6 +107,9 @@ function drawWindowBorders ()
         lowerBound:render()
         leftBound:render()
         rightBound:render()
-         
 end
 
+
+function TriggergameEnd()
+        GameState = "GameOver"
+end

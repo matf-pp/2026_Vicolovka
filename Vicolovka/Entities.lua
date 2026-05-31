@@ -1,7 +1,10 @@
+math.randomseed(os.time())
+
 local entitiesDef = {
     forest = {
         --properties(if it has any)
         isStatic = true,
+        isChild = false,
         --rendering(renders on x and y cords of the tile that has it)
         texture = love.graphics.newImage("Assets/Vicolovka_forest.png"),
         x_offset = 0,
@@ -12,17 +15,29 @@ local entitiesDef = {
     breadCrumb = {
         --properties
         isStatic = true,
+        isChild = false,
         --rendering
-        texture = nil, -- make texture
+        texture = love.graphics.newImage("Assets/Vicolovka_BreadCrumb.png"), -- make texture
         x_offset = 0,
         y_offset = 0
     },
 
-    child = {
+    boy = {
         --properties
         isStatic = true,
+        isChild = true,
         --rendering
-        texture = nil, -- make texture
+        texture = love.graphics.newImage("Assets/Vicolovka_ChildMale.png"), -- make texture
+        x_offset = 0,
+        y_offset = 0
+    },
+
+    girl = {
+        --properties
+        isStatic = true,
+        isChild = true,
+        --rendering
+        texture = love.graphics.newImage("Assets/Vicolovka_ChildFemale.png"), -- make texture
         x_offset = 0,
         y_offset = 0
     },
@@ -30,6 +45,7 @@ local entitiesDef = {
     gun = {
         --properties
         isStatic = false,
+        isChild = false,
         --rendering
         texture = nil, -- make texture
         x_offset = 0,
@@ -47,5 +63,32 @@ function Entities.create(type)
         return def;
     else
         -- TODO implement dinamic entities and how to return them
+    end
+end
+
+
+function Entities.place_child(map, num, list_of_kids)
+    local possible_locations = {}
+    local possible_child = {"boy", "girl"}
+    for y = 1 , #map do
+        for x = 1 , #map[y] do
+            if(map[y][x].tile_type == "path" and (x < 3 or x > #map[y] - 2) and (y < 3 or y > #map - 2)) then
+                table.insert(possible_locations, {x,y})
+            end
+        end
+    end
+
+    for i = 1, num do
+        if #possible_locations == 0 then
+            break
+        end
+        local chosen_position = math.random(1, #possible_locations)
+        local child_tile = possible_locations[chosen_position]
+        table.remove(possible_locations, chosen_position)
+        local chosen_child = math.random(1, #possible_child)
+        local child = possible_child[chosen_child]
+
+        map[child_tile[2]][child_tile[1]].entity = Entities.create(child)
+        table.insert(list_of_kids, child_tile)
     end
 end
