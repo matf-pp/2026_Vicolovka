@@ -1,7 +1,7 @@
 # 2026_Vicolovka
 --Kako se Pokrece--
 
-Potrebno je skinuti folder vicolovkaGame folder i pokrenuti Vicolovka.exe fajl u folderu.
+Potrebno je skinuti zipovan folder vicolovkaGame i pokrenuti Vicolovka.exe fajl u folderu.
 Izvrsni fajl je napravljen za windows operativni sistem.
 
 --Opis Igrice--
