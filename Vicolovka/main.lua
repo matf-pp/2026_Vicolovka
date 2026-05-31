@@ -45,6 +45,7 @@ function love.load()
         enemy1 = Enemy:new(world, 20 * tileSize, 15*tileSize, 100, "normal")
         enemy2 = Enemy:new(world, 10 * tileSize, 17*tileSize, 100, "ambush")
         enemy3 = Enemy:new(world, 25 * tileSize, 18*tileSize, 100, "normalWatcher")
+        enemy4 = Enemy:new(world, 27 * tileSize, 19*tileSize, 100, "ambushWatcher")
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
         
@@ -63,6 +64,7 @@ function love.update(dt)
                 enemy1:update(dt)
                 enemy2:update(dt)
                 enemy3:update(dt)
+                enemy4:update(dt)
                 local player_x = math.floor(player.x / tileSize) + 1
                 local player_y = math.floor(player.y / tileSize) + 1 
                 local player_tile = nil
@@ -98,7 +100,8 @@ function love.draw()
                 -- enemy draw
                 enemy1:render()
                 enemy2:render() 
-                enemy3:render()   
+                enemy3:render()
+                enemy4:render()    
         elseif GameState == "GameOver" then
                 love.graphics.print("GAME OVER", 400, 300)
                 love.graphics.print("Press 'R' to Restart", 400, 350)

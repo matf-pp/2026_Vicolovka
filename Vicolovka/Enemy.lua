@@ -34,6 +34,14 @@ function Enemy:findScatterTarget()
                 end
             end
         end
+    elseif self.enemyType == "ambushWatcher" then
+        for y = Map_height, 1, -1 do
+            for x = Map_width, 1, -1 do
+                if isWalkable(Map[y][x]) then
+                    return x, y
+                end
+            end
+        end
     end
 end
 
@@ -54,19 +62,27 @@ function Enemy:new(world, x, y, speed, enemyType)
 
     this.scatterX, this.scatterY = this:findScatterTarget()
 
-    if enemyType == "normalWatcher" then
-        this.watchedChildX = nil
-        this.watchedChildY = nil
+    if enemyType == "normalWatcher" or enemyType == "ambushWatcher" then
         this.playerTriggered = false
-
-        if #List_of_kids > 0 then
-            this.watchedChildX = List_of_kids[1][1]
-            this.watchedChildY = List_of_kids[1][2]
-        end
+        this.mode = "chaseChild"
     end
 
     this.texture = enemyTexture
     return this
+end
+
+function Enemy:getWatchedChildTile()
+    if List_of_kids and #List_of_kids > 0 then
+        return List_of_kids[1][1], List_of_kids[1][2]
+    end
+    return nil, nil
+end
+
+function Enemy:getWatchedChildTile2()
+    if List_of_kids and #List_of_kids > 0 then
+        return List_of_kids[2][1], List_of_kids[2][2]
+    end
+    return nil, nil
 end
 
 local function worldToTile(x, y, tileSize)
@@ -81,7 +97,7 @@ function Enemy:findChaseTarget(px, py)
 
     local tx, ty = worldToTile(px, py, tileSize)
 
-    if self.enemyType == "normal" then
+    if self.enemyType == "normal" or self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
         return tx, ty
     elseif self.enemyType == "ambush" then
         local offsetX = 0
@@ -106,10 +122,6 @@ function Enemy:findChaseTarget(px, py)
         return tx, ty
     end
 
-    if self.enemyType == "normalWatcher" then
-        return tx, ty
-    end
-
 end
 
 function Enemy:switchMode()
@@ -122,25 +134,55 @@ function Enemy:switchMode()
             self.mode = "chase"
             self.modeTimer = self.chaseDuration
         end
-    elseif self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
-        if self.playerTriggered then
-            self.mode = "chase"
-            self.modeTimer = self.chaseDuration
-            return
-        end
     end
     self.path = nil
     self.pathIndex = 1
 end
 
+function Enemy:switchMode2()
+    if self.playerTriggered then
+        self.mode = "chasePlayer"
+        self.modeTimer = self.chaseDuration
+        self.path = nil
+        self.pathIndex = 1
+        self.repathTimer = 0
+        return
+    end
 
+    if self.mode == "chaseChild" then
+        self.mode = "scatter"
+        self.modeTimer = self.scatterDuration
 
+    elseif self.mode == "scatter" then
+        self.mode = "chaseChild"
+        self.modeTimer = self.chaseDuration
+
+    else
+        self.mode = "chaseChild"
+        self.modeTimer = self.chaseDuration
+    end
+
+    self.path = nil
+    self.pathIndex = 1
+    self.repathTimer = 0
+end
 function Enemy:update(dt) 
     self.modeTimer = self.modeTimer - dt
     self.repathTimer = self.repathTimer - dt
 
-    if self.modeTimer <= 0 then
-        self:switchMode()
+    --if self.modeTimer <= 0 then
+    --    if self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
+    --        self:switchMode2()
+    --    else
+    --        self:switchMode()
+    --    end
+    --end
+    if self.enemyType ~= "normalWatcher" and
+       self.enemyType ~= "ambushWatcher" then
+
+        if self.modeTimer <= 0 then
+            self:switchMode()
+        end
     end
 
     if self.repathTimer <= 0 then
@@ -150,6 +192,24 @@ function Enemy:update(dt)
         local startX, startY = worldToTile(enemyX, enemyY, tileSize)
 
         local endX, endY 
+
+        if (self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher") and not self.playerTriggered then
+
+            local px, py = player.body:getPosition()
+            local ptx, pty = worldToTile(px, py, tileSize)
+
+            local cx, cy
+            if self.enemyType == "normalWatcher" then
+                cx, cy = self:getWatchedChildTile()
+            elseif self.enemyType == "ambushWatcher" then
+                cx, cy = self:getWatchedChildTile2()
+            end
+            if ptx == cx and pty == cy then
+                self.playerTriggered = true
+                self.mode = "chasePlayer"
+                self.repathTimer = 0
+            end
+        end
 
         if self.enemyType == "normal" or self.enemyType == "ambush" then
 
@@ -162,32 +222,25 @@ function Enemy:update(dt)
                 endY = self.scatterY
             end
 
-        elseif self.enemyType == "normalWatcher" then
-        
-            if not self.playerTriggered then
+        elseif self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
             
-                if self.mode == "chase" then
-                    endX = self.watchedChildX
-                    endY = self.watchedChildY
-                else
-                    endX = self.scatterX
-                    endY = self.scatterY
+            local cx, cy
+            if self.mode == "chaseChild" then
+                if self.enemyType == "normalWatcher" then
+                    cx, cy = self:getWatchedChildTile()
+                elseif self.enemyType == "ambushWatcher" then
+                    cx, cy = self:getWatchedChildTile2()
                 end
-            
-            else
+
+                endX = cx
+                endY = cy
+
+            elseif self.mode == "scatter" then
+                endX, endY = self.scatterX, self.scatterY
+
+            elseif self.mode == "chasePlayer" then
                 local px, py = player.body:getPosition()
                 endX, endY = self:findChaseTarget(px, py)
-            end
-        end
-
-        if self.enemyType == "normalWatcher" and not self.playerTriggered then
-
-            local px, py = player.body:getPosition()
-            local ptx, pty = worldToTile(px, py, tileSize)
-
-            if ptx == self.watchedChildX and pty == self.watchedChildY then
-                self.playerTriggered = true
-                self:switchMode()
             end
         end
 
@@ -218,9 +271,25 @@ function Enemy:update(dt)
             self.body:setLinearVelocity(0, 0)
 
             self.pathIndex = self.pathIndex + 1
-            --if self.mode == "scatter" and self.pathIndex > #self.path then
-            --    self:switchMode()
-            --end
+            if self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
+
+                if self.pathIndex > #self.path then
+
+                    if self.playerTriggered then
+                        self.mode = "chasePlayer"
+
+                    elseif self.mode == "chaseChild" then
+                        self.mode = "scatter"
+
+                    elseif self.mode == "scatter" then
+                        self.mode = "chaseChild"
+                    end
+
+                    self.path = nil
+                    self.pathIndex = 1
+                    self.repathTimer = 0
+                end
+            end
         else
             dx = dx / dist
             dy = dy / dist
