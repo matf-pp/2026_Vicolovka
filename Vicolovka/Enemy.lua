@@ -65,7 +65,16 @@ function Enemy:new(world, x, y, speed, enemyType)
         end
     end
 
-    this.texture = enemyTexture
+    if enemyType == "normal" then
+        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchPurple.png")
+    elseif enemyType == "ambush" then
+        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchRed.png")
+    elseif enemyType == "normalWatcher" then
+        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchBlue.png")
+    elseif enemyType == "ambushWatcher" then
+        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchClyde.png")
+    end
+    
     return this
 end
 

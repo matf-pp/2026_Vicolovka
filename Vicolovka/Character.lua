@@ -9,7 +9,7 @@ function Character:new(world, x, y, speed)
     local this = Object:new(world, x, y, width, height, width*0.6, height * 0.75, "dynamic", "player")
     setmetatable(this, self)
     this.speed = speed
-
+    
     this.texture = playerTexture
     return this
 end

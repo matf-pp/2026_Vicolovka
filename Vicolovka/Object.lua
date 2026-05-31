@@ -44,6 +44,9 @@ function Object:renderTile()
     if self.texture then
         if self.tile_type == "ghostBox" then
             love.graphics.draw(self.texture, self.quad, self.x - self.width/2, self.y - self.height/2)
+            if self.entity then
+                love.graphics.draw(self.entity.texture, self.x - self.width/2 + self.entity.x_offset, self.y - self.height/2 + self.entity.y_offset)
+            end
         else
             love.graphics.draw(self.texture, self.x - self.width/2, self.y - self.height/2) -- (self.x-1)*self.width (self.y-1)*self.height
             if self.entity then
@@ -70,11 +73,13 @@ function makeCollider(world, obj, type)
 
     if obj.objectType == "wall" then
         obj.fixture:setCategory(1)
+    elseif obj.objectType == "ghostBox" then
+        obj.fixture:setCategory(4)
     elseif obj.objectType == "enemy" then
         obj.fixture:setCategory(2)
         obj.fixture:setMask(2)
     elseif obj.objectType == "player" then
-        obj.fixture:setCategory(3)
+        obj.fixture:setCategory(2)
     end
     
 end
