@@ -46,6 +46,7 @@ local entitiesDef = {
         --properties
         isStatic = true,
         isChild = false,
+        isGun = true,
         --rendering
         texture = love.graphics.newImage("Assets/Vicolovka_Gun.png"),
         x_offset = 0,

@@ -32,11 +32,13 @@ LVL = 1
 Map_width = 18
 Map_height = 17
 Num_kids = 2;
+Score = 0
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
 Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
 List_of_kids = {}
 Entities.place_child(Map, Num_kids, List_of_kids)
 Entities.place_gun(Map, 3*LVL)
+
 
 
 
@@ -78,10 +80,10 @@ function love.update(dt)
                 end
 
                 if Start_witches == 0 then
-                        enemy1 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "normal")
-                        enemy2 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "ambush")
-                        enemy3 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "normalWatcher")
-                        enemy4 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "ambushWatcher")
+                        enemy1 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "normal")
+                        enemy2 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "ambush")
+                        enemy3 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "normalWatcher")
+                        enemy4 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "ambushWatcher")
                         Map[8][math.floor(Map_width/2) - 1].entity = nil
                         Map[8][math.floor(Map_width/2) - 2].entity = nil
                         Map[8][math.floor(Map_width/2) + 1].entity = nil
@@ -117,11 +119,14 @@ function love.update(dt)
                         local enemy2_y = math.floor(enemy2.y / tileSize) + 1
                         local enemy3_x = math.floor(enemy3.x / tileSize) + 1
                         local enemy3_y = math.floor(enemy3.y / tileSize) + 1
+                        local enemy4_x = math.floor(enemy4.x / tileSize) + 1
+                        local enemy4_y = math.floor(enemy4.y / tileSize) + 1
 
                         -- Naš novi if uslov za proveru iste pločice:
                         if (player_x == enemy1_x and player_y == enemy1_y) or
                         (player_x == enemy2_x and player_y == enemy2_y) or
-                        (player_x == enemy3_x and player_y == enemy3_y) then
+                        (player_x == enemy3_x and player_y == enemy3_y) or
+                        (player_x == enemy4_x and player_y == enemy4_y) then
                         
                         if GameState == "GameOn" then
                                 TriggergameEnd()
@@ -138,9 +143,11 @@ function love.update(dt)
 
                 if player_tile ~= nil and player_tile.entity and player_tile.entity.isChild == true then
                         Objectives = Objectives - 1
+                        Score = Score + 100
                         player_tile.entity = nil
-                elseif player_tile ~= nil then
+                elseif player_tile ~= nil and player_tile.entity ~= nil then
                         player_tile.entity = nil
+                        Score = Score + 10
                 end     
         end
 end
@@ -188,6 +195,12 @@ function love.draw()
                 if enemy4 then
                         enemy4:render()
                 end
+
+                love.graphics.setColor(1, 1, 1) -- Bela boja za tekst
+                love.graphics.setFont(love.graphics.newFont(18)) -- Podešavanje veličine fonta
+        
+                -- Ispisujemo tekst "SCORE: " i trenutnu vrednost na poziciju (x=15, y=15) na ekranu
+                love.graphics.print("SCORE: " .. Score, 15, 15)
                 
         elseif GameState == "GameOver" then
         -- Crna pozadina za Game Over ekran
@@ -195,6 +208,9 @@ function love.draw()
                 
                 love.graphics.setFont(love.graphics.newFont(24))
                 love.graphics.printf("GAME OVER", 0, love.graphics.getHeight() / 2 - 40, love.graphics.getWidth(), "center")
+
+                love.graphics.setFont(love.graphics.newFont(18))
+                love.graphics.printf("Final Score: " .. Score, 0, love.graphics.getHeight() / 2 - 10, love.graphics.getWidth(), "center")
                 
                 love.graphics.setFont(love.graphics.newFont(16))
                 love.graphics.printf("Press 'R' to Restart", 0, love.graphics.getHeight() / 2 + 10, love.graphics.getWidth(), "center")
@@ -204,6 +220,9 @@ function love.draw()
                 
                 love.graphics.setFont(love.graphics.newFont(24))
                 love.graphics.printf("VICTORY", 0, love.graphics.getHeight() / 2 - 40, love.graphics.getWidth(), "center")
+
+                love.graphics.setFont(love.graphics.newFont(18))
+                love.graphics.printf("Final Score: " .. Score, 0, love.graphics.getHeight() / 2 - 10, love.graphics.getWidth(), "center")
                 
                 love.graphics.setFont(love.graphics.newFont(16))
                 love.graphics.printf("Press 'R' to Restart", 0, love.graphics.getHeight() / 2 + 10, love.graphics.getWidth(), "center")
@@ -253,6 +272,7 @@ function Trigger_next_lvl()
 
         world = love.physics.newWorld(0, 0)
 
+        Start_witches = 150
         LVL = LVL + 1
         Map_width = Map_width + 8
         Map_height = Map_height + 4
@@ -263,6 +283,11 @@ function Trigger_next_lvl()
         List_of_kids = {}
         Entities.place_child(Map, Num_kids, List_of_kids)
         Entities.place_gun(Map, 3*LVL)
+
+        enemy1 = nil
+        enemy2 = nil
+        enemy3 = nil
+        enemy4 = nil
         
 
         love.load()
@@ -274,11 +299,12 @@ function Reset_Game()
         if world then world:destroy() end
         world = love.physics.newWorld(0, 0)
         -- 2. Vraćamo dimenzije mape i broj dece na početne vrednosti (Level 1)
+        Score = 0
         Start_witches = 150
         LVL = 1
         Map_width = 18
         Map_height = 17
-        Num_kids = 1
+        Num_kids = 2
 
         -- 3. Generišemo ponovo početnu mapu i decu
         Map = Gen_Map(Map_width, Map_height, tileSize, world) 
@@ -289,6 +315,7 @@ function Reset_Game()
         enemy1 = nil
         enemy2 = nil
         enemy3 = nil
+        enemy4 = nil
 
         -- 4. Pozivamo love.load() da ponovo stvori igrača i granice prozora na pravoj rezoluciji
         love.load()
