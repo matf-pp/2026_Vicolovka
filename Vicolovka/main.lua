@@ -31,7 +31,7 @@ Start_witches = 150
 LVL = 1
 Map_width = 18
 Map_height = 17
-Num_kids = 1;
+Num_kids = 2;
 --Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
 Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
 List_of_kids = {}
@@ -60,8 +60,8 @@ function love.load()
         Map[8][math.floor(Map_width/2) - 1].entity = Entities.create("purpleWitch");
         Map[8][math.floor(Map_width/2) - 2].entity = Entities.create("blueWitch");
         Map[8][math.floor(Map_width/2) + 1].entity = Entities.create("redWitch");
+        Map[8][math.floor(Map_width/2) + 2].entity = Entities.create("clydeWitch");
 
-        
         --screen borders load
         addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
         
@@ -81,9 +81,11 @@ function love.update(dt)
                         enemy1 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "normal")
                         enemy2 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "ambush")
                         enemy3 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "normalWatcher")
+                        enemy4 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 100, "ambushWatcher")
                         Map[8][math.floor(Map_width/2) - 1].entity = nil
                         Map[8][math.floor(Map_width/2) - 2].entity = nil
                         Map[8][math.floor(Map_width/2) + 1].entity = nil
+                        Map[8][math.floor(Map_width/2) + 2].entity = nil
                         Start_witches = -1
                 else Start_witches = Start_witches - 1 end
 
@@ -99,7 +101,10 @@ function love.update(dt)
                 if enemy3 then
                         enemy3:update(dt)
                 end
-
+                if enemy4 then
+                        enemy4:update(dt)
+                end
+                
                 local player_x = math.floor(player.x / tileSize) + 1
                 local player_y = math.floor(player.y / tileSize) + 1 
 
@@ -180,6 +185,10 @@ function love.draw()
                 if enemy3 then
                         enemy3:render()
                 end
+                if enemy4 then
+                        enemy4:render()
+                end
+                
         elseif GameState == "GameOver" then
         -- Crna pozadina za Game Over ekran
                 love.graphics.clear(0, 0, 0)
