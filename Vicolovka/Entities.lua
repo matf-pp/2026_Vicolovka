@@ -110,8 +110,6 @@ function Entities.create(type)
 
     if def.isStatic then
         return def;
-    else
-        -- TODO implement dinamic entities and how to return them
     end
 end
 

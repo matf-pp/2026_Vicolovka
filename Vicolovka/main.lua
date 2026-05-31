@@ -47,8 +47,6 @@ local forest = love.graphics.newImage("Assets/Vicolovka_forest.png")
 
 
 
-entities = {} -- TODO: add all entities to this table than load with foreach
-
 function love.load()
         love.window.setMode(Map_width*tileSize, Map_height*tileSize)
 
@@ -112,7 +110,7 @@ function love.update(dt)
                 local player_y = math.floor(player.y / tileSize) + 1 
 
                 if Start_Gun_Clock <= 0 then
-                        -- Ako puška NIJE aktivna, bilo koji kontakt sa vešticom je fatalan
+                        
                         if enemy1 and enemy1.body and not enemy1.body:isDestroyed() then
                                 local enemy1_x = math.floor(enemy1.x / tileSize) + 1
                                 local enemy1_y = math.floor(enemy1.y / tileSize) + 1
@@ -134,14 +132,14 @@ function love.update(dt)
                                 if player_x == enemy4_x and player_y == enemy4_y then TriggergameEnd() end
                         end
                 else
-                        -- Ako JE puška aktivna, igrač jede veštice!
+                        
                         if enemy1 then
                                 local enemy1_x = math.floor(enemy1.x / tileSize) + 1
                                 local enemy1_y = math.floor(enemy1.y / tileSize) + 1
                                 if player_x == enemy1_x and player_y == enemy1_y then
-                                        if enemy1.body then enemy1.body:destroy() end -- FIX: Čistimo Box2D telo iz memorije
+                                        if enemy1.body then enemy1.body:destroy() end 
                                         enemy1 = nil
-                                        Score = Score + 200 -- Nagradni poeni za jedenje veštice
+                                        Score = Score + 200 
                                         Map[8][math.floor(Map_width/2) - 1].entity = Entities.create("purpleWitch")
                                 end
                         end
@@ -176,7 +174,7 @@ function love.update(dt)
                                 end
                         end
 
-                        -- FIX: Smanjujemo tajmer puške preko dt (trajaće tačno u sekundama)
+                       
                         Start_Gun_Clock = Start_Gun_Clock - dt
                 end
                 
@@ -204,7 +202,7 @@ end
 
 function love.draw()
         if GameState == "StarMenu" then
-                -- Pozadina za početni ekran
+               
                 love.graphics.clear(0.1, 0.1, 0.1)
 
                 -- Naslov igre
@@ -212,8 +210,8 @@ function love.draw()
                 love.graphics.printf("VICOLOVKA", 0, startButton.y - 80, love.graphics.getWidth(), "center")
 
                 -- Crtanje dugmeta (Pravougaonik)
-                love.graphics.setColor(0.2, 0.6, 0.2) -- Zelena boja dugmeta
-                love.graphics.rectangle("fill", startButton.x, startButton.y, startButton.width, startButton.height, 10) -- 10 je zaobljeni ugao
+                love.graphics.setColor(0.2, 0.6, 0.2) 
+                love.graphics.rectangle("fill", startButton.x, startButton.y, startButton.width, startButton.height, 10) 
 
                 -- Tekst na dugmetu
                 love.graphics.setColor(1, 1, 1) -- Bela boja za tekst
@@ -345,10 +343,10 @@ end
 
 
 function Reset_Game()
-        -- 1. Uništavamo ceo fizički svet da očistimo sve stare zidove, igrače i granice
+       
         if world then world:destroy() end
         world = love.physics.newWorld(0, 0)
-        -- 2. Vraćamo dimenzije mape i broj dece na početne vrednosti (Level 1)
+        
         Start_Gun_Clock = 0
         Score = 0
         Start_witches = 150
@@ -357,7 +355,7 @@ function Reset_Game()
         Map_height = 17
         Num_kids = 2
 
-        -- 3. Generišemo ponovo početnu mapu i decu
+        
         Map = Gen_Map(Map_width, Map_height, tileSize, world) 
         List_of_kids = {}
         Entities.place_child(Map, Num_kids, List_of_kids)
@@ -368,15 +366,15 @@ function Reset_Game()
         enemy3 = nil
         enemy4 = nil
 
-        -- 4. Pozivamo love.load() da ponovo stvori igrača i granice prozora na pravoj rezoluciji
+        
         love.load()
 
-        -- 5. Vraćamo igru na početni meni (ili stavi "GameOn" ako želiš da igra krene odmah bez menija)
+        
         GameState = "StarMenu"
 end
 
 function love.keypressed(key)
-        -- Proveravamo da li je pritisnut taster 'r' i da li je stanje igre "GameOver"
+       
         if key == "r" and (GameState == "GameOver" or GameState == "Victory") then
                 Reset_Game()
         end

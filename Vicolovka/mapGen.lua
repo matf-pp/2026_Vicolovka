@@ -347,7 +347,7 @@ local function make_map(grid, map, tileSize, world)
             else
                 
                 tile.texture = pathTexture
-                tile.entity = Entities.create("breadCrumb") -- TODO implement algorithm for assigning entities to path tiles
+                tile.entity = Entities.create("breadCrumb") 
             end
 
             
