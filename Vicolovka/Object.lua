@@ -25,7 +25,7 @@ function Object:new(world, x, y, width, height, hitboxWidth, hitboxHeight, type,
         height = height,
         hitboxWidth = hitboxWidth,
         hitboxHeight = hitboxHeight,
-        texture = nil, -- TODO: make textures
+        texture = nil, 
         type = type,
         objectType = objectType
     }
