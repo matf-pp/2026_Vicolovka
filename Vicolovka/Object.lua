@@ -59,7 +59,7 @@ end
 
 function Object:render()
     if self.texture then
-        --local texture = love.graphics.newImage(self.texture)
+    
         love.graphics.draw(self.texture, self.x - self.width/2, self.y - self.height/2)
     end
     love.graphics.setColor(1,1,1)
