@@ -27,6 +27,7 @@ local startButton = {
         text = "START GAME"
 }
 
+Start_Gun_Clock = 0
 Start_witches = 150
 LVL = 1
 Map_width = 18
@@ -37,7 +38,7 @@ Score = 0
 Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
 List_of_kids = {}
 Entities.place_child(Map, Num_kids, List_of_kids)
-Entities.place_gun(Map, 3*LVL)
+Entities.place_gun(Map, 1)
 
 
 
@@ -110,28 +111,73 @@ function love.update(dt)
                 local player_x = math.floor(player.x / tileSize) + 1
                 local player_y = math.floor(player.y / tileSize) + 1 
 
-                if enemy1 and enemy2 and enemy3 then
-
-                        -- Tvoje linije za računanje pločica:
-                        local enemy1_x = math.floor(enemy1.x / tileSize) + 1
-                        local enemy1_y = math.floor(enemy1.y / tileSize) + 1
-                        local enemy2_x = math.floor(enemy2.x / tileSize) + 1
-                        local enemy2_y = math.floor(enemy2.y / tileSize) + 1
-                        local enemy3_x = math.floor(enemy3.x / tileSize) + 1
-                        local enemy3_y = math.floor(enemy3.y / tileSize) + 1
-                        local enemy4_x = math.floor(enemy4.x / tileSize) + 1
-                        local enemy4_y = math.floor(enemy4.y / tileSize) + 1
-
-                        -- Naš novi if uslov za proveru iste pločice:
-                        if (player_x == enemy1_x and player_y == enemy1_y) or
-                        (player_x == enemy2_x and player_y == enemy2_y) or
-                        (player_x == enemy3_x and player_y == enemy3_y) or
-                        (player_x == enemy4_x and player_y == enemy4_y) then
-                        
-                        if GameState == "GameOn" then
-                                TriggergameEnd()
+                if Start_Gun_Clock <= 0 then
+                        -- Ako puška NIJE aktivna, bilo koji kontakt sa vešticom je fatalan
+                        if enemy1 and enemy1.body and not enemy1.body:isDestroyed() then
+                                local enemy1_x = math.floor(enemy1.x / tileSize) + 1
+                                local enemy1_y = math.floor(enemy1.y / tileSize) + 1
+                                if player_x == enemy1_x and player_y == enemy1_y then TriggergameEnd() end
                         end
+                        if enemy2 and enemy2.body and not enemy2.body:isDestroyed() then
+                                local enemy2_x = math.floor(enemy2.x / tileSize) + 1
+                                local enemy2_y = math.floor(enemy2.y / tileSize) + 1
+                                if player_x == enemy2_x and player_y == enemy2_y then TriggergameEnd() end
                         end
+                        if enemy3 and enemy3.body and not enemy3.body:isDestroyed() then
+                                local enemy3_x = math.floor(enemy3.x / tileSize) + 1
+                                local enemy3_y = math.floor(enemy3.y / tileSize) + 1
+                                if player_x == enemy3_x and player_y == enemy3_y then TriggergameEnd() end
+                        end
+                        if enemy4 and enemy4.body and not enemy4.body:isDestroyed() then
+                                local enemy4_x = math.floor(enemy4.x / tileSize) + 1
+                                local enemy4_y = math.floor(enemy4.y / tileSize) + 1
+                                if player_x == enemy4_x and player_y == enemy4_y then TriggergameEnd() end
+                        end
+                else
+                        -- Ako JE puška aktivna, igrač jede veštice!
+                        if enemy1 then
+                                local enemy1_x = math.floor(enemy1.x / tileSize) + 1
+                                local enemy1_y = math.floor(enemy1.y / tileSize) + 1
+                                if player_x == enemy1_x and player_y == enemy1_y then
+                                        if enemy1.body then enemy1.body:destroy() end -- FIX: Čistimo Box2D telo iz memorije
+                                        enemy1 = nil
+                                        Score = Score + 200 -- Nagradni poeni za jedenje veštice
+                                        Map[8][math.floor(Map_width/2) - 1].entity = Entities.create("purpleWitch")
+                                end
+                        end
+                        if enemy2 then
+                                local enemy2_x = math.floor(enemy2.x / tileSize) + 1
+                                local enemy2_y = math.floor(enemy2.y / tileSize) + 1
+                                if player_x == enemy2_x and player_y == enemy2_y then
+                                        if enemy2.body then enemy2.body:destroy() end
+                                        enemy2 = nil
+                                        Score = Score + 200
+                                        Map[8][math.floor(Map_width/2) - 2].entity = Entities.create("blueWitch")
+                                end
+                        end
+                        if enemy3 then
+                                local enemy3_x = math.floor(enemy3.x / tileSize) + 1
+                                local enemy3_y = math.floor(enemy3.y / tileSize) + 1
+                                if player_x == enemy3_x and player_y == enemy3_y then
+                                        if enemy3.body then enemy3.body:destroy() end
+                                        enemy3 = nil
+                                        Score = Score + 200
+                                        Map[8][math.floor(Map_width/2) + 1].entity = Entities.create("redWitch")
+                                end
+                        end
+                        if enemy4 then
+                                local enemy4_x = math.floor(enemy4.x / tileSize) + 1
+                                local enemy4_y = math.floor(enemy4.y / tileSize) + 1
+                                if player_x == enemy4_x and player_y == enemy4_y then
+                                        if enemy4.body then enemy4.body:destroy() end
+                                        enemy4 = nil
+                                        Score = Score + 200
+                                        Map[8][math.floor(Map_width/2) + 2].entity = Entities.create("clydeWitch")
+                                end
+                        end
+
+                        -- FIX: Smanjujemo tajmer puške preko dt (trajaće tačno u sekundama)
+                        Start_Gun_Clock = Start_Gun_Clock - dt
                 end
                 
                 local player_tile = nil
@@ -144,6 +190,9 @@ function love.update(dt)
                 if player_tile ~= nil and player_tile.entity and player_tile.entity.isChild == true then
                         Objectives = Objectives - 1
                         Score = Score + 100
+                        player_tile.entity = nil
+                elseif player_tile ~= nil and player_tile.entity and player_tile.entity.isGun == true then
+                        Start_Gun_Clock = 8.0
                         player_tile.entity = nil
                 elseif player_tile ~= nil and player_tile.entity ~= nil then
                         player_tile.entity = nil
@@ -272,6 +321,7 @@ function Trigger_next_lvl()
 
         world = love.physics.newWorld(0, 0)
 
+        Start_Gun_Clock = 0
         Start_witches = 150
         LVL = LVL + 1
         Map_width = Map_width + 8
@@ -282,7 +332,7 @@ function Trigger_next_lvl()
         Map = Gen_Map(Map_width, Map_height, tileSize, world) 
         List_of_kids = {}
         Entities.place_child(Map, Num_kids, List_of_kids)
-        Entities.place_gun(Map, 3*LVL)
+        Entities.place_gun(Map, 1)
 
         enemy1 = nil
         enemy2 = nil
@@ -299,6 +349,7 @@ function Reset_Game()
         if world then world:destroy() end
         world = love.physics.newWorld(0, 0)
         -- 2. Vraćamo dimenzije mape i broj dece na početne vrednosti (Level 1)
+        Start_Gun_Clock = 0
         Score = 0
         Start_witches = 150
         LVL = 1
@@ -310,7 +361,7 @@ function Reset_Game()
         Map = Gen_Map(Map_width, Map_height, tileSize, world) 
         List_of_kids = {}
         Entities.place_child(Map, Num_kids, List_of_kids)
-        Entities.place_gun(Map, 3*LVL)
+        Entities.place_gun(Map, 1)
 
         enemy1 = nil
         enemy2 = nil
