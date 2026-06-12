@@ -23,7 +23,11 @@ Na svakom nivou igrač može dobiti specijalan predmet "Thunder Gun" koji privre
 - Visual Studio Code (razvojno okruženje)
 
 ## Pokretanje (development)
-Potrebno:
-- LÖVE 2D 
-
-Pokretanje:
+### LÖVE verzija
+- Potreban je LÖVE 11.5 https://love2d.org/
+- Pokretanje:
+```bash
+love .
+```
+### Windows verzija
+- Potrebno je smao skinuti zip verziju, otpakovati i pokrenuti Vicolovka.exe
