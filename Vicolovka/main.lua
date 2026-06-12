@@ -4,379 +4,84 @@ require "Enemy"
 require "mapGen"
 require "Entities"
 
-world = love.physics.newWorld(0,0)
-
---[[
-mapSizes(width x Height) :
-                18x17 rez -> 576x544
-                26x21 rez -> 832x672
-                34x25 rez -> 1088x800
-                42x29 rez -> 1344x928
-                50x33 rez -> 1600x1056
-]]
-
-tileSize = 32;
-
-GameState = "StarMenu"
-
-local startButton = {
-        x = 0,
-        y = 0,
-        width = 200,
-        height = 60,
-        text = "START GAME"
-}
-
-Start_Gun_Clock = 0
-Start_witches = 150
-LVL = 1
-Map_width = 18
-Map_height = 17
-Num_kids = 2;
-Score = 0
---Gen_Map sada vraca matricu objekata sa svojim tipom i teksturom
-Map = Gen_Map(Map_width, Map_height, tileSize, world) -- pogledaj mapGen functions za odredjivanje dimenzija 
-List_of_kids = {}
-Entities.place_child(Map, Num_kids, List_of_kids)
-Entities.place_gun(Map, 1)
-
-
-
-
-local forest = love.graphics.newImage("Assets/Vicolovka_forest.png")
-
+local game_manip = require("game_manip")
+local Game = game_manip.funcs
+local game = game_manip.data
+local startButton = game_manip.start
 
 
 function love.load()
-        love.window.setMode(Map_width*tileSize, Map_height*tileSize)
+    if game.state == "" then
+        Game.init()
+    end
 
-        startButton.x = (love.graphics.getWidth() - startButton.width) / 2
-        startButton.y = (love.graphics.getHeight() - startButton.height) / 2
-        
-        --player load
-        player = Character:new(world, 9 * tileSize, 13 * tileSize, 128) -- namestio sam spawn na 9 col 13 row
-        Objectives = #List_of_kids
+    love.window.setMode(game.mapWidth*game.tileSize, game.mapHeight*game.tileSize)
 
-        --enemy load
-        Map[8][math.floor(Map_width/2) - 1].entity = Entities.create("purpleWitch");
-        Map[8][math.floor(Map_width/2) - 2].entity = Entities.create("blueWitch");
-        Map[8][math.floor(Map_width/2) + 1].entity = Entities.create("redWitch");
-        Map[8][math.floor(Map_width/2) + 2].entity = Entities.create("clydeWitch");
-
-        --screen borders load
-        addWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
-        
+    Game.load()
 end
 
 function love.update(dt)
-        if GameState == "GameOn" then
-                world:update(dt)
-                if(Objectives <= 0) then
-                        Trigger_next_lvl()
-                end
-                if LVL == 3 then
-                        GameState = "Victory"
-                end
-
-                if Start_witches == 0 then
-                        enemy1 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "normal")
-                        enemy2 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "ambush")
-                        enemy3 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "normalWatcher")
-                        enemy4 = Enemy:new(world, 10 * tileSize, (math.floor(Map_width/2))*tileSize, 80, "ambushWatcher")
-                        Map[8][math.floor(Map_width/2) - 1].entity = nil
-                        Map[8][math.floor(Map_width/2) - 2].entity = nil
-                        Map[8][math.floor(Map_width/2) + 1].entity = nil
-                        Map[8][math.floor(Map_width/2) + 2].entity = nil
-                        Start_witches = -1
-                else Start_witches = Start_witches - 1 end
-
-                --player upadate
-                player:update(dt) 
-                --enemy update
-                if enemy1 then
-                        enemy1:update(dt)
-                end
-                if enemy2 then
-                        enemy2:update(dt)
-                end
-                if enemy3 then
-                        enemy3:update(dt)
-                end
-                if enemy4 then
-                        enemy4:update(dt)
-                end
-                
-                local player_x = math.floor(player.x / tileSize) + 1
-                local player_y = math.floor(player.y / tileSize) + 1 
-
-                if Start_Gun_Clock <= 0 then
-                        
-                        if enemy1 and enemy1.body and not enemy1.body:isDestroyed() then
-                                local enemy1_x = math.floor(enemy1.x / tileSize) + 1
-                                local enemy1_y = math.floor(enemy1.y / tileSize) + 1
-                                if player_x == enemy1_x and player_y == enemy1_y then TriggergameEnd() end
-                        end
-                        if enemy2 and enemy2.body and not enemy2.body:isDestroyed() then
-                                local enemy2_x = math.floor(enemy2.x / tileSize) + 1
-                                local enemy2_y = math.floor(enemy2.y / tileSize) + 1
-                                if player_x == enemy2_x and player_y == enemy2_y then TriggergameEnd() end
-                        end
-                        if enemy3 and enemy3.body and not enemy3.body:isDestroyed() then
-                                local enemy3_x = math.floor(enemy3.x / tileSize) + 1
-                                local enemy3_y = math.floor(enemy3.y / tileSize) + 1
-                                if player_x == enemy3_x and player_y == enemy3_y then TriggergameEnd() end
-                        end
-                        if enemy4 and enemy4.body and not enemy4.body:isDestroyed() then
-                                local enemy4_x = math.floor(enemy4.x / tileSize) + 1
-                                local enemy4_y = math.floor(enemy4.y / tileSize) + 1
-                                if player_x == enemy4_x and player_y == enemy4_y then TriggergameEnd() end
-                        end
-                else
-                        
-                        if enemy1 then
-                                local enemy1_x = math.floor(enemy1.x / tileSize) + 1
-                                local enemy1_y = math.floor(enemy1.y / tileSize) + 1
-                                if player_x == enemy1_x and player_y == enemy1_y then
-                                        if enemy1.body then enemy1.body:destroy() end 
-                                        enemy1 = nil
-                                        Score = Score + 200 
-                                        Map[8][math.floor(Map_width/2) - 1].entity = Entities.create("purpleWitch")
-                                end
-                        end
-                        if enemy2 then
-                                local enemy2_x = math.floor(enemy2.x / tileSize) + 1
-                                local enemy2_y = math.floor(enemy2.y / tileSize) + 1
-                                if player_x == enemy2_x and player_y == enemy2_y then
-                                        if enemy2.body then enemy2.body:destroy() end
-                                        enemy2 = nil
-                                        Score = Score + 200
-                                        Map[8][math.floor(Map_width/2) - 2].entity = Entities.create("blueWitch")
-                                end
-                        end
-                        if enemy3 then
-                                local enemy3_x = math.floor(enemy3.x / tileSize) + 1
-                                local enemy3_y = math.floor(enemy3.y / tileSize) + 1
-                                if player_x == enemy3_x and player_y == enemy3_y then
-                                        if enemy3.body then enemy3.body:destroy() end
-                                        enemy3 = nil
-                                        Score = Score + 200
-                                        Map[8][math.floor(Map_width/2) + 1].entity = Entities.create("redWitch")
-                                end
-                        end
-                        if enemy4 then
-                                local enemy4_x = math.floor(enemy4.x / tileSize) + 1
-                                local enemy4_y = math.floor(enemy4.y / tileSize) + 1
-                                if player_x == enemy4_x and player_y == enemy4_y then
-                                        if enemy4.body then enemy4.body:destroy() end
-                                        enemy4 = nil
-                                        Score = Score + 200
-                                        Map[8][math.floor(Map_width/2) + 2].entity = Entities.create("clydeWitch")
-                                end
-                        end
-
-                       
-                        Start_Gun_Clock = Start_Gun_Clock - dt
-                end
-                
-                local player_tile = nil
-
-                if Map[player_y] and Map[player_y][player_x] then
-                        player_tile = Map[player_y][player_x]
-                end
-
-
-                if player_tile ~= nil and player_tile.entity and player_tile.entity.isChild == true then
-                        Objectives = Objectives - 1
-                        Score = Score + 100
-                        player_tile.entity = nil
-                elseif player_tile ~= nil and player_tile.entity and player_tile.entity.isGun == true then
-                        Start_Gun_Clock = 8.0
-                        player_tile.entity = nil
-                elseif player_tile ~= nil and player_tile.entity ~= nil then
-                        player_tile.entity = nil
-                        Score = Score + 10
-                end     
+    if game.state == "GameOn" then
+        if game.objective <= 0 then
+            Game.nextLvL()
+            return
         end
+        if game.lvl == 4 then
+            Game.Victory()
+            return
+        end
+
+        if game.witchClock ~= nil then
+            game.witchClock = game.witchClock - dt
+            if game.witchClock <= 0 then
+                Game.startWitches()
+                game.witchClock = nil
+            end
+        end
+        
+        Game.update(dt)
+
+        if game.gunClock and game.gunClock > 0 then
+            Game.checkColisionWithGun()
+            game.gunClock = game.gunClock - dt
+        else
+            Game.checkColisionNoGun()
+        end
+    end   
 end
 
 
 function love.draw()
-        if GameState == "StarMenu" then
-               
-                love.graphics.clear(0.1, 0.1, 0.1)
-
-                -- Naslov igre
-                love.graphics.setFont(love.graphics.newFont(24)) 
-                love.graphics.printf("VICOLOVKA", 0, startButton.y - 80, love.graphics.getWidth(), "center")
-
-                -- Crtanje dugmeta (Pravougaonik)
-                love.graphics.setColor(0.2, 0.6, 0.2) 
-                love.graphics.rectangle("fill", startButton.x, startButton.y, startButton.width, startButton.height, 10) 
-
-                -- Tekst na dugmetu
-                love.graphics.setColor(1, 1, 1) -- Bela boja za tekst
-                love.graphics.printf(startButton.text, startButton.x, startButton.y + 18, startButton.width, "center")
-
-        elseif GameState == "GameOn" then
-                for y, row in ipairs(Map) do          --this is tmp test map 
-                        for x, tile in ipairs(row) do   --TODO: implement map as objects
-                                tile:renderTile()
-                        end
-                end
-
-                --adds borders outside the window
-                drawWindowBorders(love.graphics.getWidth(), love.graphics.getHeight())
-                
-                -- player draw
-                player:render() 
-                -- enemy draw
-                if enemy1 then
-                        enemy1:render()
-                end
-                if enemy2 then
-                        enemy2:render()
-                end
-                if enemy3 then
-                        enemy3:render()
-                end
-                if enemy4 then
-                        enemy4:render()
-                end
-
-                love.graphics.setColor(1, 1, 1) -- Bela boja za tekst
-                love.graphics.setFont(love.graphics.newFont(18)) -- Podešavanje veličine fonta
-        
-                -- Ispisujemo tekst "SCORE: " i trenutnu vrednost na poziciju (x=15, y=15) na ekranu
-                love.graphics.print("SCORE: " .. Score, 15, 15)
-                
-        elseif GameState == "GameOver" then
-        -- Crna pozadina za Game Over ekran
-                love.graphics.clear(0, 0, 0)
-                
-                love.graphics.setFont(love.graphics.newFont(24))
-                love.graphics.printf("GAME OVER", 0, love.graphics.getHeight() / 2 - 40, love.graphics.getWidth(), "center")
-
-                love.graphics.setFont(love.graphics.newFont(18))
-                love.graphics.printf("Final Score: " .. Score, 0, love.graphics.getHeight() / 2 - 10, love.graphics.getWidth(), "center")
-                
-                love.graphics.setFont(love.graphics.newFont(16))
-                love.graphics.printf("Press 'R' to Restart", 0, love.graphics.getHeight() / 2 + 10, love.graphics.getWidth(), "center")
-
-        elseif GameState == "Victory" then
-                love.graphics.clear(0, 0, 0)
-                
-                love.graphics.setFont(love.graphics.newFont(24))
-                love.graphics.printf("VICTORY", 0, love.graphics.getHeight() / 2 - 40, love.graphics.getWidth(), "center")
-
-                love.graphics.setFont(love.graphics.newFont(18))
-                love.graphics.printf("Final Score: " .. Score, 0, love.graphics.getHeight() / 2 - 10, love.graphics.getWidth(), "center")
-                
-                love.graphics.setFont(love.graphics.newFont(16))
-                love.graphics.printf("Press 'R' to Restart", 0, love.graphics.getHeight() / 2 + 10, love.graphics.getWidth(), "center")
-        end
+    if game.state == "StartMenu" then
+        Game.loadStartMenu()
+    elseif game.state == "GameOn" then
+        Game.render()
+    elseif game.state == "GameOver" then
+        Game.loadGameOver()
+    elseif game.state == "Victory" then
+        Game.loadVictory()
+    end
 end
 
-function addWindowBorders (sizeX, sizeY) 
-        -- wrapper func creates screen borders as objects on edges of screen
-        upperBound = Object:new(world, sizeX/2, -50, sizeX, 100, sizeX, 100, "static", "wall")
-        lowerBound = Object:new(world, sizeX/2, sizeY + 50, sizeX, 100, sizeX, 100, "static", "wall")
-        leftBound = Object:new(world, -50, sizeY/2, 100, sizeY, 100, sizeY, "static", "wall")
-        rightBound = Object:new(world, sizeX + 50, sizeY/2, 100, sizeY, 100, sizeY, "static", "wall")
-
-end
-
-function drawWindowBorders ()
-        -- wrapper func draws 4 rectangles on the edges of screen
-        upperBound:render()
-        lowerBound:render()
-        leftBound:render()
-        rightBound:render()
-end
-
-
-function TriggergameEnd()
-        GameState = "GameOver"
-end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    if GameState == "StarMenu" and button == 1 then
-        -- Uzimamo tačnu poziciju miša na ekranu
+    if game.state == "StartMenu" and button == 1 then
+       
         local mouseX, mouseY = love.mouse.getPosition()
 
         -- Provera da li je klik unutar koordinata dugmeta
-        if mouseX >= startButton.x and mouseX <= startButton.x + startButton.width and
-           mouseY >= startButton.y and mouseY <= startButton.y + startButton.height then
+        if x >= startButton.x and x <= startButton.x + startButton.width and
+           y >= startButton.y and y <= startButton.y + startButton.height then
             
-            GameState = "GameOn"
+            Game.start()
         end
     end
 end
 
-function Trigger_next_lvl()
-
-        world:destroy() 
-        
-
-        world = love.physics.newWorld(0, 0)
-
-        Start_Gun_Clock = 0
-        Start_witches = 150
-        LVL = LVL + 1
-        Map_width = Map_width + 8
-        Map_height = Map_height + 4
-        Num_kids = Num_kids + 1
-        
-        -- 4. Generišemo mapu u NOVOM svetu
-        Map = Gen_Map(Map_width, Map_height, tileSize, world) 
-        List_of_kids = {}
-        Entities.place_child(Map, Num_kids, List_of_kids)
-        Entities.place_gun(Map, 1)
-
-        enemy1 = nil
-        enemy2 = nil
-        enemy3 = nil
-        enemy4 = nil
-        
-
-        love.load()
-end
-
-
-function Reset_Game()
-       
-        if world then world:destroy() end
-        world = love.physics.newWorld(0, 0)
-        
-        Start_Gun_Clock = 0
-        Score = 0
-        Start_witches = 150
-        LVL = 1
-        Map_width = 18
-        Map_height = 17
-        Num_kids = 2
-
-        
-        Map = Gen_Map(Map_width, Map_height, tileSize, world) 
-        List_of_kids = {}
-        Entities.place_child(Map, Num_kids, List_of_kids)
-        Entities.place_gun(Map, 1)
-
-        enemy1 = nil
-        enemy2 = nil
-        enemy3 = nil
-        enemy4 = nil
-
-        
-        love.load()
-
-        
-        GameState = "StarMenu"
-end
-
 function love.keypressed(key)
        
-        if key == "r" and (GameState == "GameOver" or GameState == "Victory") then
-                Reset_Game()
+        if key == "r" and (game.state == "GameOver" or game.state == "Victory") then
+                Game.reset()
         end
 end
 

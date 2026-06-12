@@ -162,3 +162,30 @@ function Entities.place_gun(map, num)
         map[gun_tile[2]][gun_tile[1]].entity = Entities.create("gun")
     end
 end
+
+function Entities.houseWitches(game)
+    local witches = {
+        "purpleWitch", "blueWitch", "redWitch", "clydeWitch"
+    }
+    local pos = {-2, -1, 1, 2}
+    
+    for i, witch in ipairs(witches) do
+       game.map[8][math.floor(game.mapWidth/2) + pos[i]].entity = Entities.create(witch);
+    end
+
+end
+
+function Entities.unHouseWitches(game)
+    local pos = {-2, -1, 1, 2}
+    for i = 1, #pos do
+        game.map[8][math.floor(game.mapWidth/2) + pos[i]].entity = nil
+    end
+end
+
+function Entities.killWitch(i, game)
+    local witches = {
+        "purpleWitch", "blueWitch", "redWitch", "clydeWitch"
+    }
+    local pos = {-2, -1, 1, 2}
+    game.map[8][math.floor(game.mapWidth/2) + pos[i]].entity = Entities.create(witches[i])
+end

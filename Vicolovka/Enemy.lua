@@ -6,35 +6,35 @@ Enemy.__index = Enemy
 local enemyTexture = love.graphics.newImage("Assets/Vicolovka_Pulsifer1.png")
 local width, height = enemyTexture:getDimensions()
 
-function Enemy:findScatterTarget()
+function Enemy:findScatterTarget(game)
     if self.enemyType == "normal" then
-        for y = 1, #Map do
-            for x = Map_width, 1, -1 do
-                if isWalkable(Map[y][x]) then
+        for y = 1, #game.map do
+            for x = game.mapWidth, 1, -1 do
+                if IsWalkable(game.map[y][x]) then
                     return x, y
                 end
             end
         end
     elseif self.enemyType == "ambush" then
-        for y = 1, #Map do
-            for x = 1,#Map[1] do
-                if isWalkable(Map[y][x]) then
+        for y = 1, #game.map do
+            for x = 1,#game.map[1] do
+                if IsWalkable(game.map[y][x]) then
                     return x, y
                 end
             end
         end
     elseif self.enemyType == "normalWatcher" then
-        for y = Map_height, 1, -1 do
-            for x = 1, Map_width do
-                if isWalkable(Map[y][x]) then
+        for y = game.mapHeight, 1, -1 do
+            for x = 1, game.mapWidth do
+                if IsWalkable(game.map[y][x]) then
                     return x, y
                 end
             end
         end
     elseif self.enemyType == "ambushWatcher" then
-        for y = Map_height, 1, -1 do
-            for x = Map_width, 1, -1 do
-                if isWalkable(Map[y][x]) then
+        for y = game.mapHeight, 1, -1 do
+            for x = game.mapWidth, 1, -1 do
+                if IsWalkable(game.map[y][x]) then
                     return x, y
                 end
             end
@@ -42,8 +42,8 @@ function Enemy:findScatterTarget()
     end
 end
 
-function Enemy:new(world, x, y, speed, enemyType) 
-    local this = Object:new(world, x, y, width, height, width*0.6, height * 0.8, "dynamic", "enemy")
+function Enemy:create(game, x, y, speed, enemyType) 
+    local this = Object:new(game.world, x, y, width, height, width*0.6, height * 0.8, "dynamic", "enemy")
     setmetatable(this, self)
     this.speed = speed
     this.enemyType = enemyType
@@ -57,7 +57,7 @@ function Enemy:new(world, x, y, speed, enemyType)
     this.scatterDuration = 7
     this.chaseDuration = 25
 
-    this.scatterX, this.scatterY = this:findScatterTarget()
+    this.scatterX, this.scatterY = this:findScatterTarget(game)
 
     if enemyType == "normalWatcher" or enemyType == "ambushWatcher" then
         this.playerTriggered = false
@@ -67,9 +67,9 @@ function Enemy:new(world, x, y, speed, enemyType)
     if enemyType == "normal" then
         this.texture = love.graphics.newImage("Assets/Vicolovka_WitchPurple.png")
     elseif enemyType == "ambush" then
-        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchRed.png")
-    elseif enemyType == "normalWatcher" then
         this.texture = love.graphics.newImage("Assets/Vicolovka_WitchBlue.png")
+    elseif enemyType == "normalWatcher" then
+        this.texture = love.graphics.newImage("Assets/Vicolovka_WitchRed.png")
     elseif enemyType == "ambushWatcher" then
         this.texture = love.graphics.newImage("Assets/Vicolovka_WitchClyde.png")
     end
@@ -77,14 +77,14 @@ function Enemy:new(world, x, y, speed, enemyType)
     return this
 end
 
-function Enemy:getWatchedChildTile()
+function Enemy:getWatchedChildTile(List_of_kids)
     if List_of_kids and #List_of_kids > 0 then
         return List_of_kids[1][1], List_of_kids[1][2]
     end
     return nil, nil
 end
 
-function Enemy:getWatchedChildTile2()
+function Enemy:getWatchedChildTile2(List_of_kids)
     if List_of_kids and #List_of_kids > 0 then
         return List_of_kids[2][1], List_of_kids[2][2]
     end
@@ -98,10 +98,10 @@ local function worldToTile(x, y, tileSize)
     return tileX, tileY
 end
 
-function Enemy:findChaseTarget(px, py)
+function Enemy:findChaseTarget(px, py, game)
     
 
-    local tx, ty = worldToTile(px, py, tileSize)
+    local tx, ty = worldToTile(px, py, game.tileSize)
 
     if self.enemyType == "normal" or self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher" then
         return tx, ty
@@ -122,8 +122,8 @@ function Enemy:findChaseTarget(px, py)
         tx = tx + offsetX
         ty = ty + offsetY
 
-        tx = math.max(1, math.min(tx, Map_width))
-        ty = math.max(1, math.min(ty, Map_height))
+        tx = math.max(1, math.min(tx, game.mapWidth))
+        ty = math.max(1, math.min(ty, game.mapHeight))
 
         return tx, ty
     end
@@ -172,7 +172,9 @@ function Enemy:switchMode2()
     self.pathIndex = 1
     self.repathTimer = 0
 end
-function Enemy:update(dt) 
+
+function Enemy:update(dt, game) 
+
     self.modeTimer = self.modeTimer - dt
     self.repathTimer = self.repathTimer - dt
 
@@ -189,20 +191,20 @@ function Enemy:update(dt)
         local enemyX, enemyY = self.body:getPosition()
         
 
-        local startX, startY = worldToTile(enemyX, enemyY, tileSize)
+        local startX, startY = worldToTile(enemyX, enemyY, game.tileSize)
 
         local endX, endY 
 
         if (self.enemyType == "normalWatcher" or self.enemyType == "ambushWatcher") and not self.playerTriggered then
 
-            local px, py = player.body:getPosition()
-            local ptx, pty = worldToTile(px, py, tileSize)
+            local px, py = game.player.body:getPosition()
+            local ptx, pty = worldToTile(px, py, game.tileSize)
 
             local cx, cy
             if self.enemyType == "normalWatcher" then
-                cx, cy = self:getWatchedChildTile()
+                cx, cy = self:getWatchedChildTile(game.kids)
             elseif self.enemyType == "ambushWatcher" then
-                cx, cy = self:getWatchedChildTile2()
+                cx, cy = self:getWatchedChildTile2(game.kids)
             end
             if ptx == cx and pty == cy then
                 self.playerTriggered = true
@@ -214,8 +216,8 @@ function Enemy:update(dt)
         if self.enemyType == "normal" or self.enemyType == "ambush" then
 
             if self.mode == "chase" then
-                local px, py = player.body:getPosition()
-                endX, endY = self:findChaseTarget(px, py)
+                local px, py = game.player.body:getPosition()
+                endX, endY = self:findChaseTarget(px, py, game)
             
             else
                 endX = self.scatterX
@@ -227,9 +229,9 @@ function Enemy:update(dt)
             local cx, cy
             if self.mode == "chaseChild" then
                 if self.enemyType == "normalWatcher" then
-                    cx, cy = self:getWatchedChildTile()
+                    cx, cy = self:getWatchedChildTile(game.kids)
                 elseif self.enemyType == "ambushWatcher" then
-                    cx, cy = self:getWatchedChildTile2()
+                    cx, cy = self:getWatchedChildTile2(game.kids)
                 end
 
                 endX = cx
@@ -239,12 +241,13 @@ function Enemy:update(dt)
                 endX, endY = self.scatterX, self.scatterY
 
             elseif self.mode == "chasePlayer" then
-                local px, py = player.body:getPosition()
-                endX, endY = self:findChaseTarget(px, py)
+                local px, py = game.player.body:getPosition()
+                endX, endY = self:findChaseTarget(px, py, game)
             end
         end
 
-        self.path = AStar(Map, startX, startY, endX, endY)
+
+        self.path = AStar(game.map, startX, startY, endX, endY)
 
         self.pathIndex = 1
         self.repathTimer = 1
@@ -253,9 +256,9 @@ function Enemy:update(dt)
     if self.path and self.path[self.pathIndex] then
         local node = self.path[self.pathIndex]
 
-        local targetX = (node.x - 1) * tileSize + tileSize/2
+        local targetX = (node.x - 1) * game.tileSize + game.tileSize/2
 
-        local targetY = (node.y - 1) * tileSize + tileSize/2
+        local targetY = (node.y - 1) * game.tileSize + game.tileSize/2
 
         local ex, ey = self.body:getPosition()
 
@@ -302,3 +305,20 @@ function Enemy:update(dt)
     self.x, self.y = self.body:getPosition()
 end
 
+function Enemy:getTile(game)
+    local enemy_x, enemy_y = self:getPosition(game.tileSize)
+    local enemy_tile = nil
+
+    if game.map[enemy_y] and game.map[enemy_y][enemy_x] then
+        enemy_tile = game.map[enemy_y][enemy_x]
+    end
+
+    return enemy_tile
+end
+
+function Enemy:getPosition(tileSize)
+    local enemy_x = math.floor(self.x / tileSize) + 1
+    local enemy_y = math.floor(self.y / tileSize) + 1
+
+    return enemy_x, enemy_y
+end

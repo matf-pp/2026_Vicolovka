@@ -23,7 +23,7 @@ end
 
 
 
-function isWalkable(tile)
+function IsWalkable(tile)
     return tile.tile_type == "path"
 
 end
@@ -81,7 +81,7 @@ function AStar(Map, startX, startY, endX, endY)
 
             if nx >= 1 and ny >= 1 and ny <= #Map and nx <= #Map[1] then
 
-                if isWalkable(Map[ny][nx]) then
+                if IsWalkable(Map[ny][nx]) then
 
                     if not nodeInList(closedSet, nx, ny) then
 
