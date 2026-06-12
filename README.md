@@ -13,7 +13,7 @@ Inspiracija likom Pulsifer-a iz serije *Good Omens*.
 Igrač kontroliše lik Pulsifer-a i cilj je spasavanje dece od veštica kroz više nivoa.
 
 Tokom igre igrač sakuplja predmete na mapi koji donose poene.  
-Veštice imaju različite AI obrasce: neke prate decu, dok druge jure igrača.
+Veštice imaju različite obrasce: neke prate decu, dok druge jure igrača.
 
 Na svakom nivou igrač može dobiti specijalan predmet "Thunder Gun" koji privremeno omogućava eliminaciju neprijatelja pri kontaktu.
 
@@ -24,6 +24,6 @@ Na svakom nivou igrač može dobiti specijalan predmet "Thunder Gun" koji privre
 
 ## Pokretanje (development)
 Potrebno:
-- LÖVE 2D (11.x)
+- LÖVE 2D 
 
 Pokretanje:
