@@ -31,3 +31,7 @@ love .
 ```
 ### Windows verzija
 - Potrebno je smao skinuti zip verziju, otpakovati i pokrenuti Vicolovka.exe
+
+## Autori
+- Ognjen Stefanovic: mi23088@alas.matf.bg.ac.rs 
+- Igor Tanev: mi23153@alas.matf.bg.ac.rs
